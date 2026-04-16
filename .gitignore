@@ -1,3 +1,9 @@
+### My folders ###
+data/**/*
+!data/saves/
+!data/themes/
+
+### Basic project folders ###
 .gradle
 build/
 !gradle/wrapper/gradle-wrapper.jar
