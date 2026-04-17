@@ -5,6 +5,9 @@ import com.kissene3.game.*;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Scanner;
 
 public class ConsoleMain {
@@ -13,111 +16,67 @@ public class ConsoleMain {
 	private static boolean running = true;
 	
 	private static void init() {
-		boolean cycle = true;
-		Difficulties difficulty = null;
+		DifficultyRegistry.init();
+		
 		System.out.println(ConsoleColor.GREEN_BRIGHT + "Welcome to Minesweeper\n" + ConsoleColor.RESET);
 		System.out.flush();
-		while (cycle) {
-			System.out.println(ConsoleColor.YELLOW + "Choose a difficulty:" + ConsoleColor.RESET);
-			System.out.println(ConsoleColor.YELLOW + "1. Easy" + ConsoleColor.RESET);
-			System.out.println(ConsoleColor.YELLOW + "2. Medium" + ConsoleColor.RESET);
-			System.out.println(ConsoleColor.YELLOW + "3. Hard" + ConsoleColor.RESET);
-			System.out.println(ConsoleColor.YELLOW + "4. Custom" + ConsoleColor.RESET);
+		
+		Difficulty difficulty = null;
+		List<String> options = new ArrayList<>(DifficultyRegistry.getAvailableNames());
+		Collections.sort(options);
+		
+		while (difficulty == null) {
+			for (int i = 0; i < options.size(); i++) {
+				System.out.println(ConsoleColor.YELLOW.toString() + (i + 1) + ". " + capitalize(options.get(i)) + ConsoleColor.RESET);
+			}
+			System.out.println(ConsoleColor.YELLOW.toString() + (options.size() + 1) + ". Custom" + ConsoleColor.RESET);
+			
 			System.out.print("Enter the number: ");
 			System.out.flush();
+			
 			String in = input.nextLine().trim();
-			int chose;
+			
 			try {
-				chose = Integer.parseInt(in);
-			} catch (NumberFormatException ex) {
-				System.out.println(ConsoleColor.RED + "Invalid input. Please enter a number between 1 and 4.\n" + ConsoleColor.RESET);
-				System.out.flush();
-				continue;
-			}
-			difficulty = switch (chose) {
-				case 1 -> {
-					cycle = false;
-					yield Difficulties.EASY;
-				}
-				case 2 -> {
-					cycle = false;
-					yield Difficulties.MEDIUM;
-				}
-				case 3 -> {
-					cycle = false;
-					yield Difficulties.HARD;
-				}
-				case 4 -> {
-					cycle = false;
-					yield customDifficulty();
-				}
-				default -> {
-					System.out.println(ConsoleColor.RED + "Invalid input. Please enter a number between 1 and 4.\n" + ConsoleColor.RESET);
+				int choice = Integer.parseInt(in);
+				if (choice >= 1 && choice <= options.size()) {
+					difficulty = DifficultyRegistry.get(options.get(choice - 1));
+				} else if (choice == options.size() + 1) {
+					difficulty = customDifficulty();
+				} else {
+					System.out.println(ConsoleColor.RED + "Invalid choice.\n" + ConsoleColor.RESET);
 					System.out.flush();
-					yield null;
 				}
-			};
+			} catch (NumberFormatException ex) {
+				System.out.println(ConsoleColor.RED + "Please enter a number.\n" + ConsoleColor.RESET);
+				System.out.flush();
+			}
 		}
 		System.out.println("\n\n\n\n\n\n");
 		System.out.flush();
 		game.newGame(difficulty);
 	}
 	
+	private static @NotNull String capitalize(@NotNull String s) {
+		return s.substring(0, 1).toUpperCase() + s.substring(1);
+	}
+	
 	@Contract(" -> new")
-	private static @NotNull Difficulties customDifficulty() {
-		int rows, columns, mines;
+	private static @NotNull Difficulty customDifficulty() {
 		while (true) {
-			System.out.print("Enter the number of rows and columns of the grid (e.g. 10 16): ");
-			System.out.flush();
-			String[] parts = input.nextLine().trim().split(" ");
-			if (parts.length != 2) {
-				System.out.println(ConsoleColor.RED + "Invalid input. Please enter two numbers separated by a space.\n" + ConsoleColor.RESET);
-				System.out.flush();
-				continue;
-			}
 			try {
-				rows = Integer.parseInt(parts[0]);
-				columns = Integer.parseInt(parts[1]);
-			} catch (NumberFormatException ex) {
-				System.out.println(ConsoleColor.RED + "Invalid input. Please enter valid numbers for rows and columns.\n" + ConsoleColor.RESET);
-				System.out.flush();
-				continue;
+				System.out.print("Enter rows, columns and mines (e.g. 10 10 15): ");
+				String[] p = input.nextLine().trim().split("\\s+");
+				if (p.length != 3) throw new Exception("Need 3 values.");
+				
+				return new Difficulty(
+						Integer.parseInt(p[0]),
+						Integer.parseInt(p[1]),
+						Integer.parseInt(p[2])
+				);
+			} catch (Exception e) {
+				System.out.println(ConsoleColor.RED + "Error: " + e.getMessage() + "\n" + ConsoleColor.RESET);
 			}
-			if (rows <= 0 || columns <= 0) {
-				System.out.println(ConsoleColor.RED + "The number of rows and columns cannot be less than or equal to 0.\n" + ConsoleColor.RESET);
-				System.out.flush();
-				continue;
-			}
-			if (rows * columns <= 9) {
-				System.out.println(ConsoleColor.RED + "The size is too small.\n" + ConsoleColor.RESET);
-				System.out.flush();
-				continue;
-			}
-			break;
 		}
-		while (true) {
-			System.out.print("Enter the number of mines: ");
-			System.out.flush();
-			try {
-				mines = Integer.parseInt(input.nextLine().trim());
-			} catch (NumberFormatException ex) {
-				System.out.println(ConsoleColor.RED + "Invalid input. Please enter a valid number for mines.\n" + ConsoleColor.RESET);
-				System.out.flush();
-				continue;
-			}
-			if (mines > (rows * columns) - 9) {
-				System.out.println(ConsoleColor.RED + "The number of mines must be lesser than the size of the grid minus nine.\n" + ConsoleColor.RESET);
-				System.out.flush();
-				continue;
-			}
-			if (mines <= 0) {
-				System.out.println(ConsoleColor.RED + "The number of mines cannot be less than or equal to 0.\n" + ConsoleColor.RESET);
-				System.out.flush();
-				continue;
-			}
-			break;
-		}
-		return new Difficulties(rows, columns, mines);
 	}
 	
 	private static void playAgain() {
@@ -137,6 +96,7 @@ public class ConsoleMain {
 		}
 	}
 	
+	@SuppressWarnings("UnnecessaryModifier")
 	public static void main() {
 		game = new Game(System.in, System.out, System.err);
 		while (running) {

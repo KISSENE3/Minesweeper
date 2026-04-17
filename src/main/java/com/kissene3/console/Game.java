@@ -30,7 +30,7 @@ public class Game {
 	/* ---------- CONSTRUCTORS ---------- */
 	
 	/* ---------- INITIALIZERS ---------- */
-	public void newGame(@NotNull Difficulties difficulty) {
+	public void newGame(@NotNull Difficulty difficulty) {
 		this.grid = new Grid(difficulty.height(), difficulty.width(), difficulty.numMines());
 		this.mainLoop();
 	}

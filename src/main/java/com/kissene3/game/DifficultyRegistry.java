@@ -1,0 +1,97 @@
+package com.kissene3.game;
+
+import com.google.gson.Gson;
+import org.jetbrains.annotations.*;
+
+import java.io.*;
+import java.util.*;
+
+public class DifficultyRegistry {
+	private static final Gson GSON = new Gson();
+	
+	/**
+	 * Map that associates difficulty name with file path.<br />
+	 * {@code true} is internal (from Resources) while {@code false} is external.
+	 */
+	private static final Map<String, Boolean> CACHE = new HashMap<>();
+	
+	// Constants
+	private static final String EXTERNAL_DIR = "data/difficulties/";
+	private static final String INTERNAL_DIR = "/difficulties/";
+	private static final String[] DEFAULTS = {"easy", "medium", "hard"};
+	
+	/**
+	 * Scans every file and populate the {@code Map}.
+	 * To be called at the start of the application.
+	 */
+	public static void init() {
+		CACHE.clear();
+		
+		// 1. Loads the defaults from Resources.
+		for (String name : DEFAULTS) {
+			Difficulty d = loadFromResources(name);
+			if (d == null)
+				continue;
+			CACHE.put(name.toLowerCase(), true);
+		}
+		
+		// 2. Override or add from external files.
+		File dir = new File(EXTERNAL_DIR);
+		if (!dir.exists() || !dir.isDirectory())
+			return;
+		
+		File[] files = dir.listFiles((_, name) -> name.endsWith(".json"));
+		if (files == null)
+			return;
+		
+		for (File file : files) {
+			String name = file.getName().replace(".json", "").toLowerCase();
+			Difficulty custom = loadFromFile(file);
+			
+			// VALIDATION: Adds to the Map only if it's correct.
+			if (isValid(custom)) {
+				CACHE.put(name, false);
+			} else {
+				System.err.println("File " + file.getName() + " corrupted or partial. Ignored.");
+			}
+		}
+	}
+	
+	public static @NotNull Difficulty get(@NotNull String name) {
+		String key = CACHE.containsKey(name.toLowerCase()) ? name.toLowerCase() : "easy";
+		Boolean isInternal = CACHE.getOrDefault(key, true);
+		
+		Difficulty d = isInternal ? loadFromResources(key) : loadFromFile(new File(EXTERNAL_DIR + key + ".json"));
+		
+		return Objects.requireNonNullElseGet(d, () -> new Difficulty(9, 9, 10));
+	}
+	
+	@Contract(pure = true)
+	public static @NotNull Set<String> getAvailableNames() {
+		return CACHE.keySet();
+	}
+	
+	/* \/ \/ Private Helper Methods \/ \/ */
+	
+	private static boolean isValid(@Nullable Difficulty d) {
+		return d != null && d.width() * d.height() - 9 > 0;
+	}
+	
+	private static @Nullable Difficulty loadFromFile(@NotNull File file) {
+		try (Reader r = new FileReader(file)) {
+			return GSON.fromJson(r, Difficulty.class);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+	
+	private static @Nullable Difficulty loadFromResources(String name) {
+		try (InputStream is = DifficultyRegistry.class.getResourceAsStream(INTERNAL_DIR + name + ".json")) {
+			if (is == null)
+				return null;
+			return GSON.fromJson(new InputStreamReader(is), Difficulty.class);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+}

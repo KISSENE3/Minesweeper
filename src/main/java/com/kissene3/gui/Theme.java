@@ -2,60 +2,44 @@ package com.kissene3.gui;
 
 import com.google.gson.annotations.SerializedName;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
-import java.util.List;
-import java.util.Map;
 
 @SuppressWarnings("unused")
 public record Theme(
-		@SerializedName("background")
-		Color background,
-		@SerializedName("background_lighter_shade")
-		Color backgroundLighterShade,
-		@SerializedName("background_darker_shade")
-		Color backgroundDarkerShade,
-		@SerializedName("border")
-		Color border,
-		@SerializedName("background_exploded_mine")
-		Color backgroundExplodedMine,
-		@SerializedName("overlay")
-		Color overlay,
-		@SerializedName("cross")
-		Color cross,
-		@SerializedName("flag")
-		Color flag,
-		@SerializedName("flag_base")
-		Color flagBase,
-		@SerializedName("mine")
-		Color mine,
-		@SerializedName("mine_shade")
-		Color mineShade,
-		@SerializedName("number_one")
-		Color numberOne,
-		@SerializedName("number_two")
-		Color numberTwo,
-		@SerializedName("number_three")
-		Color numberThree,
-		@SerializedName("number_four")
-		Color numberFour,
-		@SerializedName("number_five")
-		Color numberFive,
-		@SerializedName("number_six")
-		Color numberSix,
-		@SerializedName("number_seven")
-		Color numberSeven,
-		@SerializedName("number_eight")
-		Color numberEight,
-		@SerializedName("title")
-		Color title,
-		@SerializedName("title_outline")
-		Color titleOutline
-		) {
+		@SerializedName("background") Color background,
+		@SerializedName("background_lighter_shade") Color backgroundLighterShade,
+		@SerializedName("background_darker_shade") Color backgroundDarkerShade,
+		@SerializedName("border") Color border,
+		@SerializedName("background_exploded_mine") Color backgroundExplodedMine,
+		@SerializedName("overlay") Color overlay,
+		@SerializedName("cross") Color cross,
+		@SerializedName("flag") Color flag,
+		@SerializedName("flag_base") Color flagBase,
+		@SerializedName("mine") Color mine,
+		@SerializedName("mine_shade") Color mineShade,
+		@SerializedName("number_one") Color numberOne,
+		@SerializedName("number_two") Color numberTwo,
+		@SerializedName("number_three") Color numberThree,
+		@SerializedName("number_four") Color numberFour,
+		@SerializedName("number_five") Color numberFive,
+		@SerializedName("number_six") Color numberSix,
+		@SerializedName("number_seven") Color numberSeven,
+		@SerializedName("number_eight") Color numberEight,
+		@SerializedName("title") Color title,
+		@SerializedName("title_outline") Color titleOutline
+) {
 	
-	public static final Map<String, Theme> ALL_THEMES;
-	public static final List<String> ALL_THEME_ORDER;
+	public Theme {
+		if (
+				background == null || backgroundLighterShade == null || backgroundDarkerShade == null || border == null ||
+				backgroundExplodedMine == null || overlay == null || cross == null || flag == null || flagBase == null ||
+				mine == null || mineShade == null || numberOne == null || numberTwo == null || numberThree == null || numberFour == null ||
+				numberFive == null || numberSix == null || numberSeven == null || numberEight == null || title == null || titleOutline == null
+		) {
+			throw new IllegalArgumentException("Theme colors cannot be null. Check the JSON fields.");
+		}
+	}
 	
 	public static final Theme LIGHT_MODE = new Theme(
 			new Color(192, 192, 192, 255),		// Background
@@ -123,35 +107,5 @@ public record Theme(
 			case 8 -> this.numberEight;
 			default -> throw new IllegalArgumentException("The number must be between 1 and 8.");
 		};
-	}
-	
-	/**
-	 * Gets the {@code Theme} from its key.
-	 * @param key The key of the {@code Theme} in the {@code Map} <i>{@code ALL_THEMES}</i>.
-	 * @return The theme corresponding to the key entered or <i>{@code LIGHT_MODE}</i> if not found.
-	 */
-	public static @NotNull Theme getTheme(@Nullable String key) {
-		if (key == null)
-			return LIGHT_MODE;
-		return ALL_THEMES.getOrDefault(key, LIGHT_MODE);
-	}
-	
-	/**
-	 * Gets the key of the next theme in the {@code Map} <i>{@code ALL_THEMES}</i>.
-	 * @param currentKey The key of the current theme.
-	 * @return The key of the next theme.
-	 */
-	public static @NotNull String getNextThemeKey(@NotNull String currentKey) {
-		int currentIndex = ALL_THEME_ORDER.indexOf(currentKey);
-		int nextIndex = (currentIndex + 1) % ALL_THEME_ORDER.size();
-		return ALL_THEME_ORDER.get(nextIndex);
-	}
-	
-	static {
-		ALL_THEMES = Map.ofEntries(
-				Map.entry("Light", LIGHT_MODE),
-				Map.entry("Dark",  DARK_MODE)
-		);
-		ALL_THEME_ORDER = List.of("Light", "Dark");
 	}
 }

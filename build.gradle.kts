@@ -26,8 +26,39 @@ tasks.test {
 tasks.register("setupProject") {
 	doLast {
 		mkdir("data/saves")
-		mkdir("data/themes") // This directory is for custom themes
-		println("Directories data/saves and data/themes created successfully.")
+		val themesDestination = file("data/themes")
+		val difficultiesDestination = file("data/difficulties")
+
+		copy {
+			from("src/main/resources/themes/") {
+				include("*.json")
+				include("README.md")
+			}
+			into(themesDestination)
+
+			eachFile {
+				val targetFile = File(themesDestination, path)
+				if (targetFile.exists()) {
+					exclude()
+				}
+			}
+		}
+		copy {
+			from("src/main/resources/difficulties/") {
+				include("*.json")
+				include("README.md")
+			}
+			into(difficultiesDestination)
+
+			eachFile {
+				val targetFile = File(themesDestination, path)
+				if (targetFile.exists()) {
+					exclude()
+				}
+			}
+		}
+
+		println("Setup completed: file JSON and README verified.")
 	}
 }
 

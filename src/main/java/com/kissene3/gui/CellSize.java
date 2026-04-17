@@ -1,5 +1,6 @@
 package com.kissene3.gui;
 
+@SuppressWarnings("unused")
 public enum CellSize {
 	SMALL(16),
 	MEDIUM(32),

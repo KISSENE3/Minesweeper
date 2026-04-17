@@ -2,10 +2,16 @@ package com.kissene3.gui.screens;
 
 import com.kissene3.gui.*;
 import com.kissene3.gui.components.*;
+import com.kissene3.gui.io.SettingsRegistry;
+import com.kissene3.gui.io.ThemeRegistry;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 public class MenuScreen extends Screen {
 	private final char[][] backgroundLayout = new char[][] {
@@ -33,14 +39,19 @@ public class MenuScreen extends Screen {
 		this.componentsManager.addComponent(new MyButton((this.getWidth() - 200) / 2, this.getHeight() - 100, 200, 50, "QUIT") {
 			@Override
 			public void onClick(@NotNull MouseEvent e) {
-				SettingsIO.save(MenuScreen.this.manager.getSettings());
+				SettingsRegistry.save(MenuScreen.this.manager.getSettings());
 				System.exit(0);
 			}
 		});
 		this.componentsManager.addComponent(new MyButton((this.getWidth() - 200) / 2, this.getHeight() - 175, 200, 50, MenuScreen.this.manager.getSettings().getThemeKey().toUpperCase()) {
 			@Override
 			public void onClick(@NotNull MouseEvent e) {
-				String key = Theme.getNextThemeKey(MenuScreen.this.manager.getSettings().getThemeKey());
+				List<String> options = new ArrayList<>(ThemeRegistry.getAvailableNames());
+				Collections.sort(options);
+				int index = options.indexOf(MenuScreen.this.manager.getSettings().getThemeKey());
+				index++;
+				index %= options.size();
+				String key = options.get(index);
 				MenuScreen.this.manager.getSettings().setTheme(key);
 				this.setLabel(key.toUpperCase());
 			}
@@ -295,7 +306,6 @@ class Title {
 	}
 	
 	private static void renderFullText(@NotNull Graphics2D g, int p, int x, int y) {
-		int startX = x;
 		drawM(g, p, x, y); x += 12 * p;
 		drawI(g, p, x, y); x += 5 * p;
 		drawN(g, p, x, y); x += 12 * p;

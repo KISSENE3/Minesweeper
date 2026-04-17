@@ -3,6 +3,7 @@ package com.kissene3.game;
 import java.util.HashMap;
 import java.util.Map;
 
+@SuppressWarnings("unused")
 public enum CellDisplay {
 	HIDDEN("-"),
 	FLAGGED("F"),
