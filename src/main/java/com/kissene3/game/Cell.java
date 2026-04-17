@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 
+@SuppressWarnings("unused")
 public class Cell extends MyAbstractButton {
 	
 	/* ---------- FINAL ATTRIBUTES ---------- */

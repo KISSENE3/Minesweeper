@@ -11,7 +11,6 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 public class MenuScreen extends Screen {
 	private final char[][] backgroundLayout = new char[][] {
