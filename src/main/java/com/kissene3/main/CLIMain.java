@@ -10,7 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Scanner;
 
-public class ConsoleMain {
+public class CLIMain {
 	private static final Scanner input = new Scanner(System.in);
 	private static Game game;
 	private static boolean running = true;
@@ -96,7 +96,6 @@ public class ConsoleMain {
 		}
 	}
 	
-	@SuppressWarnings("UnnecessaryModifier")
 	public static void main() {
 		game = new Game(System.in, System.out, System.err);
 		while (running) {

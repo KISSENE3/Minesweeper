@@ -38,7 +38,7 @@ tasks.register("setupProject") {
 
 			eachFile {
 				val targetFile = File(themesDestination, path)
-				if (targetFile.exists()) {
+				if (targetFile.exists() && "README.md" != targetFile.name) {
 					exclude()
 				}
 			}
@@ -51,8 +51,8 @@ tasks.register("setupProject") {
 			into(difficultiesDestination)
 
 			eachFile {
-				val targetFile = File(themesDestination, path)
-				if (targetFile.exists()) {
+				val targetFile = File(difficultiesDestination, path)
+				if (targetFile.exists() && "README.md" != targetFile.name) {
 					exclude()
 				}
 			}

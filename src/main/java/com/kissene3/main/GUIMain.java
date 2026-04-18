@@ -2,6 +2,7 @@ package com.kissene3.main;
 
 import com.kissene3.game.DifficultyRegistry;
 import com.kissene3.gui.*;
+import com.kissene3.gui.io.AppLogger;
 import com.kissene3.gui.io.SettingsRegistry;
 import com.kissene3.gui.io.ThemeRegistry;
 import com.kissene3.gui.screens.*;
@@ -14,10 +15,12 @@ import java.awt.image.BufferStrategy;
 public class GUIMain {
 	public static Settings settings = SettingsRegistry.load();
 	
-	@SuppressWarnings("UnnecessaryModifier")
-	public static void main(@SuppressWarnings("unused") String[] args) {
+	public static void main() {
+		AppLogger.init();
 		DifficultyRegistry.init();
 		ThemeRegistry.init();
+		
+		AppLogger.info("Booting...");
 		
 		Frame frame = new Frame("Minesweeper");
 		frame.setLayout(new BorderLayout());
@@ -27,12 +30,13 @@ public class GUIMain {
 		frame.setVisible(true);
 		
 		ScreenManager screenManager = new ScreenManager(canvas, frame, settings);
-		
 		screenManager.pushScreen(new MenuScreen(screenManager));
+		
 		
 		frame.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
 				SettingsRegistry.save(settings);
+				AppLogger.info("Quitting...\n\n");
 				System.exit(0);
 			}
 		});

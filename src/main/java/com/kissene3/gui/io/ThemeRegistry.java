@@ -25,11 +25,11 @@ public class ThemeRegistry {
 				// Using Long to prevent 32-bit signed Integer overflow to -1.
 				long value = Long.parseLong(hex, 16);
 				
-				if (hex.length() <= 6) //noinspection SpellCheckingInspection
+				if (hex.length() <= 6)
 				{
 					// RRGGBB: adds 100% Alpha (FF) to the front.
 					return new Color((int) (value | 0xFF000000L), true);
-				} else //noinspection SpellCheckingInspection
+				} else
 				{
 					// AARRGGBB: alpha already considered.
 					return new Color((int) value, true);
@@ -58,8 +58,11 @@ public class ThemeRegistry {
 		// 1. Loads the defaults from Resources.
 		for (String name : DEFAULTS) {
 			Theme t = loadFromResources(name);
-			if (t == null)
+			if (t == null) {
+				AppLogger.warning("Failed to load theme " + name + " from resources.");
 				continue;
+			}
+			AppLogger.info("Loading theme " + name + " from resources.");
 			CACHE.put(name.toLowerCase(), true);
 		}
 		
@@ -78,9 +81,10 @@ public class ThemeRegistry {
 			
 			// VALIDATION: Adds to the Map only if it's correct.
 			if (isValid(custom)) {
+				AppLogger.info("Loading theme " + name);
 				CACHE.put(name, false);
 			} else {
-				System.err.println("File " + file.getName() + " corrupted or partial. Ignored.");
+				AppLogger.warning("Failed to load theme " + name + ". Ignored.");
 			}
 		}
 	}
@@ -112,7 +116,8 @@ public class ThemeRegistry {
 				new Color(  0,   0,   0, 255),		// Number seven
 				new Color(128, 128, 128, 255),		// Number eight
 				new Color(255,   0,   0, 255),		// Title
-				new Color(  0,   0,   0, 255)		// Title outline
+				new Color(  0,   0,   0, 255),		// Title outline
+				new Color(  0,   0,   0, 255)		// Text
 		));
 	}
 	
@@ -129,18 +134,24 @@ public class ThemeRegistry {
 	
 	private static @Nullable Theme loadFromFile(@NotNull File file) {
 		try (Reader r = new FileReader(file)) {
+			AppLogger.info("Loading theme from file: " + file.getName());
 			return GSON.fromJson(r, Theme.class);
 		} catch (Exception e) {
+			AppLogger.warning("Failed to load theme from file: " + file.getName() + " " + e.getMessage());
 			return null;
 		}
 	}
 	
 	private static @Nullable Theme loadFromResources(String name) {
 		try (InputStream is = ThemeRegistry.class.getResourceAsStream(INTERNAL_DIR + name + ".json")) {
-			if (is == null)
+			if (is == null) {
+				AppLogger.warning("Failed to load theme from resources: " + name);
 				return null;
+			}
+			AppLogger.info("Loading theme from resources: " + name);
 			return GSON.fromJson(new InputStreamReader(is), Theme.class);
 		} catch (Exception e) {
+			AppLogger.warning("Failed to load theme from resources: " + name + " " + e.getMessage());
 			return null;
 		}
 	}

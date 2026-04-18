@@ -1,6 +1,7 @@
 package com.kissene3.game;
 
 import com.google.gson.Gson;
+import com.kissene3.gui.io.AppLogger;
 import org.jetbrains.annotations.*;
 
 import java.io.*;
@@ -30,9 +31,12 @@ public class DifficultyRegistry {
 		// 1. Loads the defaults from Resources.
 		for (String name : DEFAULTS) {
 			Difficulty d = loadFromResources(name);
-			if (d == null)
+			if (d == null) {
+				AppLogger.warning("Failed to load difficulty " + name + " from resources.");
 				continue;
+			}
 			CACHE.put(name.toLowerCase(), true);
+			AppLogger.info("Loaded difficulty " + name + " from resources.");
 		}
 		
 		// 2. Override or add from external files.
@@ -51,8 +55,9 @@ public class DifficultyRegistry {
 			// VALIDATION: Adds to the Map only if it's correct.
 			if (isValid(custom)) {
 				CACHE.put(name, false);
+				AppLogger.info("Loaded difficulty: " + name);
 			} else {
-				System.err.println("File " + file.getName() + " corrupted or partial. Ignored.");
+				AppLogger.warning("Failed to load difficulty: " + name);
 			}
 		}
 	}
@@ -79,18 +84,24 @@ public class DifficultyRegistry {
 	
 	private static @Nullable Difficulty loadFromFile(@NotNull File file) {
 		try (Reader r = new FileReader(file)) {
+			AppLogger.info("Loading " + file.getName());
 			return GSON.fromJson(r, Difficulty.class);
 		} catch (Exception e) {
+			AppLogger.warning("Failed to load difficulty: " + file.getName() + " " + e.getMessage());
 			return null;
 		}
 	}
 	
 	private static @Nullable Difficulty loadFromResources(String name) {
 		try (InputStream is = DifficultyRegistry.class.getResourceAsStream(INTERNAL_DIR + name + ".json")) {
-			if (is == null)
+			if (is == null) {
+				AppLogger.warning("Failed to load difficulty from resources: " + name);
 				return null;
+			}
+			AppLogger.info("Loading " + name + " from resources");
 			return GSON.fromJson(new InputStreamReader(is), Difficulty.class);
 		} catch (Exception e) {
+			AppLogger.warning("Failed to load difficulty from resources: " + name + " " + e.getMessage());
 			return null;
 		}
 	}

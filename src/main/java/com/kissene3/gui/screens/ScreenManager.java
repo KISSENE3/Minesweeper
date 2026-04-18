@@ -1,12 +1,14 @@
 package com.kissene3.gui.screens;
 
 import com.kissene3.gui.*;
+import com.kissene3.gui.io.AppLogger;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
+@SuppressWarnings("unused")
 public class ScreenManager {
 	private final Deque<Screen> screenStack = new ArrayDeque<>();
 	private final Canvas canvas;
@@ -17,6 +19,7 @@ public class ScreenManager {
 		this.canvas = canvas;
 		this.frame = frame;
 		this.settings = settings;
+		AppLogger.info("ScreenManager initialized.");
 	}
 
 	public Settings getSettings() {
@@ -32,16 +35,20 @@ public class ScreenManager {
 		newScreen.setManager(this);
 		
 		this.screenStack.push(newScreen);
-		applyScreen(newScreen);
+		this.applyScreen(newScreen);
+		AppLogger.info("Pushed screen: " + newScreen.getClass().getSimpleName());
 	}
 	
 	/** Shows the previous {@link Screen} in the stack, destroying the current one. */
 	public void popScreen() {
 		if (this.screenStack.size() <= 1)
 			return;
-		removeListeners(this.screenStack.pop());
+		Screen poppedScreen = this.screenStack.pop();
+		this.removeListeners(poppedScreen);
+		AppLogger.info("Popped screen. Current screen: " + poppedScreen.getClass().getSimpleName());
 		assert this.screenStack.peek() != null;
-		applyScreen(this.screenStack.peek());
+		this.applyScreen(this.screenStack.peek());
+		
 	}
 	
 	private void applyScreen(@NotNull Screen screen) {

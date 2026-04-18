@@ -27,67 +27,20 @@ public record Theme(
 		@SerializedName("number_seven") Color numberSeven,
 		@SerializedName("number_eight") Color numberEight,
 		@SerializedName("title") Color title,
-		@SerializedName("title_outline") Color titleOutline
+		@SerializedName("title_outline") Color titleOutline,
+		@SerializedName("text") Color text
 ) {
 	
 	public Theme {
 		if (
 				background == null || backgroundLighterShade == null || backgroundDarkerShade == null || border == null ||
-				backgroundExplodedMine == null || overlay == null || cross == null || flag == null || flagBase == null ||
-				mine == null || mineShade == null || numberOne == null || numberTwo == null || numberThree == null || numberFour == null ||
-				numberFive == null || numberSix == null || numberSeven == null || numberEight == null || title == null || titleOutline == null
+				backgroundExplodedMine == null || overlay == null || cross == null || flag == null || flagBase == null || mine == null ||
+				mineShade == null || numberOne == null || numberTwo == null || numberThree == null || numberFour == null || numberFive == null ||
+				numberSix == null || numberSeven == null || numberEight == null || title == null || titleOutline == null || text == null
 		) {
 			throw new IllegalArgumentException("Theme colors cannot be null. Check the JSON fields.");
 		}
 	}
-	
-	public static final Theme LIGHT_MODE = new Theme(
-			new Color(192, 192, 192, 255),		// Background
-			new Color(255, 255, 255, 255),		// Background lighter shade
-			new Color(128, 128, 128, 255),		// Background darker shade
-			new Color(128, 128, 128, 255),		// Border
-			new Color(255,   0,   0, 255),		// Background exploded mine
-			new Color(255, 255, 255,  96),		// Overlay
-			new Color(170,   0,   0, 255),		// Cross
-			new Color(255,   0,   0, 255),		// Flag
-			new Color(  0,   0,   0, 255),		// Flag base
-			new Color(  0,   0,   0, 255),		// Mine
-			new Color(255, 255, 255, 255),		// Mine Shade
-			new Color(  0,   0, 255, 255),		// Number one
-			new Color(  0, 128,   0, 255),		// Number two
-			new Color(255,   0,   0, 255),		// Number three
-			new Color(  0,   0, 128, 255),		// Number four
-			new Color(128,   0,   0, 255),		// Number five
-			new Color(  0, 128, 128, 255),		// Number six
-			new Color(  0,   0,   0, 255),		// Number seven
-			new Color(128, 128, 128, 255),		// Number eight
-			new Color(255,   0,   0, 255),		// Title
-			new Color(  0,   0,   0, 255)		// Title outline
-	);
-	
-	public static final Theme DARK_MODE = new Theme(
-			new Color( 30,  30,  30, 255),		// Background
-			new Color( 75,  75,  75, 255),		// Background lighter shade
-			new Color( 15,  15,  15, 255),		// Background darker shade
-			new Color( 60,  60,  60, 255),		// Border
-			new Color(150,   0,   0, 255),		// Background exploded mine
-			new Color(100, 149, 237,  40),		// Overlay
-			new Color(255, 255, 255, 255),		// Cross
-			new Color(255,  45,  85, 255),		// Flag
-			new Color(255, 255, 255, 255),		// Flag base
-			new Color(200, 200, 200, 255),		// Mine
-			new Color(255, 255, 255, 255),		// Mine Shade
-			new Color(100, 149, 237, 255),		// Number one
-			new Color(144, 238, 144, 255),		// Number two
-			new Color(255,  99,  71, 255),		// Number three
-			new Color(180, 130, 255, 255),		// Number four
-			new Color(255, 160, 122, 255),		// Number five
-			new Color(  0, 206, 209, 255),		// Number six
-			new Color(220, 220, 220, 255),		// Number seven
-			new Color(160, 160, 160, 255),		// Number eight
-			new Color(160,   0,   0, 255),		// Title
-			new Color(128, 128, 128, 255)		// Title outline
-	);
 	
 	/**
 	 * Gets the color of the <code>number</code> entered.

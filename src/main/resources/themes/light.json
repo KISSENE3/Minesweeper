@@ -19,5 +19,6 @@
   "number_seven": "#FF000000",
   "number_eight": "#FF808080",
   "title": "#FFFF0000",
-  "title_outline": "#FF000000"
+  "title_outline": "#FF000000",
+  "text": "#FF000000"
 }

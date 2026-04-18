@@ -2,6 +2,7 @@ package com.kissene3.gui.screens;
 
 import com.kissene3.gui.*;
 import com.kissene3.gui.components.*;
+import com.kissene3.gui.io.AppLogger;
 import com.kissene3.gui.io.SettingsRegistry;
 import com.kissene3.gui.io.ThemeRegistry;
 import org.jetbrains.annotations.NotNull;
@@ -35,14 +36,19 @@ public class MenuScreen extends Screen {
 	
 	private void init() {
 		
-		this.componentsManager.addComponent(new MyButton((this.getWidth() - 200) / 2, this.getHeight() - 100, 200, 50, "QUIT") {
+		this.componentsManager.addComponent(new MinesweeperButton((this.getWidth() - 192) / 2, this.getHeight() - 96, 192, 64, "QUIT") {
 			@Override
 			public void onClick(@NotNull MouseEvent e) {
 				SettingsRegistry.save(MenuScreen.this.manager.getSettings());
+				AppLogger.info("Quitting...\n\n");
 				System.exit(0);
 			}
+			
+			public Theme getTheme() {
+				return MenuScreen.this.manager.getSettings().getTheme();
+			}
 		});
-		this.componentsManager.addComponent(new MyButton((this.getWidth() - 200) / 2, this.getHeight() - 175, 200, 50, MenuScreen.this.manager.getSettings().getThemeKey().toUpperCase()) {
+		this.componentsManager.addComponent(new MinesweeperButton((this.getWidth() - 192) / 2, this.getHeight() - 192, 192, 64, MenuScreen.this.manager.getSettings().getThemeKey().toUpperCase()) {
 			@Override
 			public void onClick(@NotNull MouseEvent e) {
 				List<String> options = new ArrayList<>(ThemeRegistry.getAvailableNames());
@@ -54,7 +60,12 @@ public class MenuScreen extends Screen {
 				MenuScreen.this.manager.getSettings().setTheme(key);
 				this.setLabel(key.toUpperCase());
 			}
+			
+			public Theme getTheme() {
+				return MenuScreen.this.manager.getSettings().getTheme();
+			}
 		});
+		AppLogger.info("MenuScreen initialized.");
 	}
 	
 	@Override

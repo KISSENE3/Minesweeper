@@ -37,7 +37,7 @@ public class SettingsRegistry {
 			GSON.toJson(delta, writer);
 			writer.flush();
 		} catch (IOException e) {
-			System.err.println("Error writing temp: " + e.getMessage());
+			AppLogger.severe("Error writing temp file: " + e.getMessage());
 			return;
 		}
 		
@@ -49,9 +49,11 @@ public class SettingsRegistry {
 			try {
 				Files.move(tempFile.toPath(), finalFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 			} catch (IOException ex) {
-				System.err.println("Error moving: " + ex.getMessage());
+				AppLogger.severe("Error moving temp file to final location: " + ex.getMessage());
 			}
 		}
+		
+		AppLogger.info("Settings saved.");
 	}
 	
 	/**
@@ -60,15 +62,23 @@ public class SettingsRegistry {
 	 */
 	public static @NotNull Settings load() {
 		File file = new File(FILE_PATH);
-		if (!file.exists())
+		if (!file.exists()) {
+			AppLogger.info("Setting file not found, using default.");
 			return new Settings();
+		}
 		
 		try (Reader reader = new FileReader(file)) {
 			Settings loaded = GSON.fromJson(reader, Settings.class);
-			return
-				(loaded != null) ? loaded : new Settings();
+			if (loaded != null) {
+				AppLogger.info("Settings loaded.");
+				return loaded;
+			} else {
+				AppLogger.warning("Failed to load settings, using default.");
+				return new Settings();
+			}
+			
 		} catch (Exception e) {
-			System.err.println("Error loading settings (using default): " + e.getMessage());
+			AppLogger.warning("Error loading settings (using default): " + e.getMessage());
 			return new Settings();
 		}
 	}
