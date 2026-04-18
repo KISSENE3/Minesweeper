@@ -115,7 +115,7 @@ public class Cell extends MyAbstractButton {
 	}
 	
 	public Theme getTheme() {
-		return null;//this.grid.getSettings().getTheme();
+		return this.grid.getSettings().getTheme();
 	}
 	
 	/* ---------- GETTERS ---------- */
