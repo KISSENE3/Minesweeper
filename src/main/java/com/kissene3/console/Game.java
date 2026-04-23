@@ -9,6 +9,7 @@ import java.io.PrintStream;
 import java.util.Scanner;
 
 
+@SuppressWarnings("unused")
 public class Game {
 	
 	/* ---------- FINAL ATTRIBUTES ---------- */
@@ -120,6 +121,10 @@ public class Game {
 		this.printGrid();
 		this.output.println(ConsoleColor.RED_BRIGHT + "You lost!" + ConsoleColor.RESET);
 		this.output.flush();
+	}
+	
+	public PrintStream getError() {
+		return error;
 	}
 	/* ---------- INTERACTORS ---------- */
 }

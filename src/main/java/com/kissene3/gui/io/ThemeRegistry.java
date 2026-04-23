@@ -59,10 +59,10 @@ public class ThemeRegistry {
 		for (String name : DEFAULTS) {
 			Theme t = loadFromResources(name);
 			if (t == null) {
-				AppLogger.warning("Failed to load theme " + name + " from resources.");
+				AppLogger.warning("Failed to load theme from resources: " + name);
 				continue;
 			}
-			AppLogger.info("Loading theme " + name + " from resources.");
+			AppLogger.info("Loaded theme from resources: " + name);
 			CACHE.put(name.toLowerCase(), true);
 		}
 		
@@ -81,10 +81,10 @@ public class ThemeRegistry {
 			
 			// VALIDATION: Adds to the Map only if it's correct.
 			if (isValid(custom)) {
-				AppLogger.info("Loading theme " + name);
+				AppLogger.info("Loaded theme: " + name);
 				CACHE.put(name, false);
 			} else {
-				AppLogger.warning("Failed to load theme " + name + ". Ignored.");
+				AppLogger.warning("Failed to load theme: " + name + ". Ignored.");
 			}
 		}
 	}
@@ -117,7 +117,8 @@ public class ThemeRegistry {
 				new Color(128, 128, 128, 255),		// Number eight
 				new Color(255,   0,   0, 255),		// Title
 				new Color(  0,   0,   0, 255),		// Title outline
-				new Color(  0,   0,   0, 255)		// Text
+				new Color(  0,   0,   0, 255),		// Text
+				new Color( 64, 144, 255, 255)		// Selected difficulty
 		));
 	}
 	
@@ -134,10 +135,9 @@ public class ThemeRegistry {
 	
 	private static @Nullable Theme loadFromFile(@NotNull File file) {
 		try (Reader r = new FileReader(file)) {
-			AppLogger.info("Loading theme from file: " + file.getName());
 			return GSON.fromJson(r, Theme.class);
 		} catch (Exception e) {
-			AppLogger.warning("Failed to load theme from file: " + file.getName() + " " + e.getMessage());
+			AppLogger.warning("Failed to load theme: " + file.getName() + ".\n" + e.getMessage());
 			return null;
 		}
 	}
@@ -145,13 +145,12 @@ public class ThemeRegistry {
 	private static @Nullable Theme loadFromResources(String name) {
 		try (InputStream is = ThemeRegistry.class.getResourceAsStream(INTERNAL_DIR + name + ".json")) {
 			if (is == null) {
-				AppLogger.warning("Failed to load theme from resources: " + name);
+				AppLogger.warning("Failed to load theme from resources: " + name + ".json");
 				return null;
 			}
-			AppLogger.info("Loading theme from resources: " + name);
 			return GSON.fromJson(new InputStreamReader(is), Theme.class);
 		} catch (Exception e) {
-			AppLogger.warning("Failed to load theme from resources: " + name + " " + e.getMessage());
+			AppLogger.warning("Failed to load theme from resources: " + name + ".json.\n" + e.getMessage());
 			return null;
 		}
 	}

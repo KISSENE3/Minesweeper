@@ -13,15 +13,18 @@ import java.awt.event.WindowEvent;
 import java.awt.image.BufferStrategy;
 
 public class GUIMain {
-	public static Settings settings = SettingsRegistry.load();
+	public Settings settings;
 	
-	public static void main() {
+	public GUIMain() {
 		AppLogger.init();
 		DifficultyRegistry.init();
 		ThemeRegistry.init();
-		
+		this.settings = SettingsRegistry.load();
 		AppLogger.info("Booting...");
-		
+		this.start();
+	}
+	
+	public void start() {
 		Frame frame = new Frame("Minesweeper");
 		frame.setLayout(new BorderLayout());
 		
@@ -41,11 +44,10 @@ public class GUIMain {
 			}
 		});
 		
-		startRendering(canvas, screenManager);
+		this.startRendering(canvas, screenManager);
 	}
 	
-	@SuppressWarnings("BusyWait")
-	private static void startRendering(Canvas canvas, ScreenManager sm) {
+	private void startRendering(Canvas canvas, ScreenManager sm) {
 		new Thread(() -> {
 			canvas.createBufferStrategy(2);
 			BufferStrategy bs = canvas.getBufferStrategy();
@@ -62,7 +64,9 @@ public class GUIMain {
 				bs.show();
 				Toolkit.getDefaultToolkit().sync();
 				
-				try { Thread.sleep(16); } catch (Exception _) {}
+				try { //noinspection BusyWait
+					Thread.sleep(16);
+				} catch (Exception _) {}
 			}
 		}).start();
 	}

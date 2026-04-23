@@ -12,6 +12,7 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class MenuScreen extends Screen {
 	private final char[][] backgroundLayout = new char[][] {
@@ -29,43 +30,77 @@ public class MenuScreen extends Screen {
 			{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'M', 'M', 'M', ' ', ' ', ' ', ' ', 'M'}
 	};
 	
-	public MenuScreen(ScreenManager manager) {
+	public MenuScreen(@NotNull ScreenManager manager) {
 		super(manager);
 		this.init();
 	}
 	
 	private void init() {
 		
-		this.componentsManager.addComponent(new MinesweeperButton((this.getWidth() - 192) / 2, this.getHeight() - 96, 192, 64, "QUIT") {
-			@Override
-			public void onClick(@NotNull MouseEvent e) {
-				SettingsRegistry.save(MenuScreen.this.manager.getSettings());
+		this.componentsManager.addComponent(this.getMinesweeperButton((this.getWidth() - 192) / 2, this.getHeight() - 96, "QUIT",
+			(e) -> {
+				if (e.getButton() != MouseEvent.BUTTON1)
+					return;
+				SettingsRegistry.save(this.manager.getSettings());
 				AppLogger.info("Quitting...\n\n");
 				System.exit(0);
-			}
-			
-			public Theme getTheme() {
-				return MenuScreen.this.manager.getSettings().getTheme();
-			}
-		});
-		this.componentsManager.addComponent(new MinesweeperButton((this.getWidth() - 192) / 2, this.getHeight() - 192, 192, 64, MenuScreen.this.manager.getSettings().getThemeKey().toUpperCase()) {
-			@Override
-			public void onClick(@NotNull MouseEvent e) {
+			}));
+		
+		this.componentsManager.addComponent(this.getMinesweeperButton((this.getWidth() - 192) / 2, this.getHeight() - 192, "THEME",
+			(e) -> {
+				if (e.getButton() != MouseEvent.BUTTON1 && e.getButton() != MouseEvent.BUTTON3)
+					return;
+				
 				List<String> options = new ArrayList<>(ThemeRegistry.getAvailableNames());
 				Collections.sort(options);
-				int index = options.indexOf(MenuScreen.this.manager.getSettings().getThemeKey());
-				index++;
-				index %= options.size();
+				int index = options.indexOf(this.manager.getSettings().getThemeKey());
+			
+				if (e.getButton() == MouseEvent.BUTTON1)
+					index = (index + 1) % options.size();
+				else
+					index = (index - 1 + options.size()) % options.size();
+				
 				String key = options.get(index);
-				MenuScreen.this.manager.getSettings().setTheme(key);
-				this.setLabel(key.toUpperCase());
+				this.manager.getSettings().setTheme(key);
+			}));
+		
+		this.componentsManager.addComponent(this.getMinesweeperButton((this.getWidth() - 192) / 2, this.getHeight() - 288, "PLAY",
+			(e) -> {
+				if (e.getButton() != MouseEvent.BUTTON1)
+					return;
+				this.manager.pushScreen(new DifficultyScreen(MenuScreen.this.manager));
+			}));
+		
+		AppLogger.info("MenuScreen initialized.");
+	}
+	
+	private @NotNull MinesweeperButton getMinesweeperButton(int x, int y, String label, Consumer<MouseEvent> action) {
+		return new MinesweeperButton(x, y, 192, 64, label) {
+			@Override
+			public void onClick(@NotNull MouseEvent e) {
+				action.accept(e);
 			}
 			
+			@Override
 			public Theme getTheme() {
 				return MenuScreen.this.manager.getSettings().getTheme();
 			}
-		});
-		AppLogger.info("MenuScreen initialized.");
+		};
+	}
+	
+	@Override
+	public boolean isTransparent() {
+		return false;
+	}
+	
+	@Override
+	public int getX() {
+		return 0;
+	}
+	
+	@Override
+	public int getY() {
+		return 0;
 	}
 	
 	@Override
@@ -198,7 +233,8 @@ class MenuCell {
 		g.fillRect(x, y, p, size);	// left line
 	}
 	
-	private static void drawMine(@NotNull Graphics2D g, int p, int x, int y, @NotNull Theme theme) {g.setColor(theme.mine());
+	private static void drawMine(@NotNull Graphics2D g, int p, int x, int y, @NotNull Theme theme) {
+		g.setColor(theme.mine());
 		g.fillRect(x + 6 * p, y + 4 * p, 5 * p, 9 * p);	// vertical rect
 		g.fillRect(x + 4 * p, y + 6 * p, 9 * p, 5 * p);	// horizontal rect
 		g.fillRect(x + 5 * p, y + 5 * p, 7 * p, 7 * p);	// centered square

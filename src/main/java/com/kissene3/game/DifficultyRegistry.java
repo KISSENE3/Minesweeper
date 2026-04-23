@@ -32,11 +32,11 @@ public class DifficultyRegistry {
 		for (String name : DEFAULTS) {
 			Difficulty d = loadFromResources(name);
 			if (d == null) {
-				AppLogger.warning("Failed to load difficulty " + name + " from resources.");
+				AppLogger.warning("Failed to load difficulty from resources: " + name);
 				continue;
 			}
 			CACHE.put(name.toLowerCase(), true);
-			AppLogger.info("Loaded difficulty " + name + " from resources.");
+			AppLogger.info("Loaded difficulty from resources: " + name);
 		}
 		
 		// 2. Override or add from external files.
@@ -71,9 +71,12 @@ public class DifficultyRegistry {
 		return Objects.requireNonNullElseGet(d, () -> new Difficulty(9, 9, 10));
 	}
 	
-	@Contract(pure = true)
 	public static @NotNull Set<String> getAvailableNames() {
 		return CACHE.keySet();
+	}
+	
+	public static @NotNull @Unmodifiable List<String> getAvailableNamesSorted() {
+		return CACHE.keySet().stream().sorted().toList();
 	}
 	
 	/* \/ \/ Private Helper Methods \/ \/ */
@@ -84,10 +87,9 @@ public class DifficultyRegistry {
 	
 	private static @Nullable Difficulty loadFromFile(@NotNull File file) {
 		try (Reader r = new FileReader(file)) {
-			AppLogger.info("Loading " + file.getName());
 			return GSON.fromJson(r, Difficulty.class);
 		} catch (Exception e) {
-			AppLogger.warning("Failed to load difficulty: " + file.getName() + " " + e.getMessage());
+			AppLogger.warning("Failed to load difficulty: " + file.getName() + ".\n" + e.getMessage());
 			return null;
 		}
 	}
@@ -95,13 +97,12 @@ public class DifficultyRegistry {
 	private static @Nullable Difficulty loadFromResources(String name) {
 		try (InputStream is = DifficultyRegistry.class.getResourceAsStream(INTERNAL_DIR + name + ".json")) {
 			if (is == null) {
-				AppLogger.warning("Failed to load difficulty from resources: " + name);
+				AppLogger.warning("Failed to load difficulty from resources: " + name + ".json");
 				return null;
 			}
-			AppLogger.info("Loading " + name + " from resources");
 			return GSON.fromJson(new InputStreamReader(is), Difficulty.class);
 		} catch (Exception e) {
-			AppLogger.warning("Failed to load difficulty from resources: " + name + " " + e.getMessage());
+			AppLogger.warning("Failed to load difficulty from resources: " + name + ".json.\n" + e.getMessage());
 			return null;
 		}
 	}

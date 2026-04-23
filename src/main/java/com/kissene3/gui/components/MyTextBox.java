@@ -85,6 +85,14 @@ public class MyTextBox extends MyAbstractButton implements Focusable {
 		return this.text.toString();
 	}
 	
+	public void setCursorIndex(int cursorIndex) {
+		this.cursorIndex = Math.max(0, Math.min(cursorIndex, this.text.length()));
+	}
+	
+	public int getCursorIndex() {
+		return this.cursorIndex;
+	}
+	
 	/* ---------- TEXT MANAGEMENT ---------- */
 	/* ---------- FONT & PLACEHOLDER GETTERS/SETTERS ---------- */
 	
@@ -183,12 +191,17 @@ public class MyTextBox extends MyAbstractButton implements Focusable {
 	@Override
 	public void setFocus(boolean focused) {
 		this.isFocused = focused;
+		if (!focused) {
+			this.cursorIndex = 0;
+			this.scrollOffset = 0;
+		}
 	}
 	
 	@Override
 	public void onKeyTyped(@NotNull KeyEvent e) {
 		char c = e.getKeyChar();
-		if (c >= ' ' && this.text.length() < this.maxCharacters) {
+		
+		if (this.isValidChar(c) && this.text.length() < this.maxCharacters) {
 			this.text.insert(this.cursorIndex, c);
 			this.cursorIndex++;
 			this.updateScroll();
@@ -350,6 +363,10 @@ public class MyTextBox extends MyAbstractButton implements Focusable {
 		
 		this.text.insert(this.cursorIndex, str);
 		this.cursorIndex += str.length();
+	}
+	
+	protected boolean isValidChar(char c) {
+		return c >= ' ';
 	}
 	
 	/* ---------- UTILITY ---------- */

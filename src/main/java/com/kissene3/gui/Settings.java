@@ -80,6 +80,10 @@ public class Settings {
 		return getThemeKey().equalsIgnoreCase(key);
 	}
 	
+	public boolean isCustomDifficulty() {
+		return "custom".equalsIgnoreCase(this.lastDifficultyName);
+	}
+	
 	/**
 	 * Gets the current difficulty.<br />
 	 * If is {@code custom}, returns the data saved locally on the settings.<br />

@@ -1,9 +1,11 @@
 package com.kissene3.gui.screens;
 
 import com.kissene3.gui.*;
+import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 
+@SuppressWarnings("unused")
 public abstract class Screen {
 	
 	/* ---------- ATTRIBUTES ---------- */
@@ -15,17 +17,21 @@ public abstract class Screen {
 	/* ---------- ATTRIBUTES ---------- */
 	/* ---------- CONSTRUCTORS ---------- */
 	
-	public Screen(ScreenManager manager) {
+	public Screen(@NotNull ScreenManager manager) {
 		this.manager = manager;
-		this.componentsManager = new MyGUIManager();
+		this.componentsManager = new MyGUIManager(this);
 	}
 	
 	/* ---------- CONSTRUCTORS ---------- */
 	/* ---------- ABSTRACTS ---------- */
 	
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
+	public abstract boolean isTransparent();
+	public abstract int getX();
+	public abstract int getY();
 	public abstract int getWidth();
 	public abstract int getHeight();
-	public abstract void draw(Graphics2D g);
+	public abstract void draw(@NotNull Graphics2D g);
 	
 	/* ---------- ABSTRACTS ---------- */
 	/* ---------- GETTERS/SETTERS ---------- */

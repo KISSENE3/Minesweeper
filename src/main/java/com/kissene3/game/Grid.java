@@ -14,7 +14,7 @@ import java.awt.event.MouseEvent;
 import java.util.LinkedList;
 import java.util.Random;
 
-
+@SuppressWarnings("unused")
 public class Grid extends MyAbstractButton implements Container {
 	
 	/* ---------- FINAL GAME ATTRIBUTES ---------- */

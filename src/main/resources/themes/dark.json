@@ -20,5 +20,6 @@
   "number_eight": "#FFA0A0A0",
   "title": "#FFA00000",
   "title_outline": "#FF808080",
-  "text": "#FFFFFFFF"
+  "text": "#FFFFFFFF",
+  "selected_difficulty": "#FF3050AA"
 }

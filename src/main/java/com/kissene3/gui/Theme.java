@@ -28,15 +28,16 @@ public record Theme(
 		@SerializedName("number_eight") Color numberEight,
 		@SerializedName("title") Color title,
 		@SerializedName("title_outline") Color titleOutline,
-		@SerializedName("text") Color text
+		@SerializedName("text") Color text,
+		@SerializedName("selected_difficulty") Color selectedDifficulty
 ) {
 	
 	public Theme {
 		if (
-				background == null || backgroundLighterShade == null || backgroundDarkerShade == null || border == null ||
-				backgroundExplodedMine == null || overlay == null || cross == null || flag == null || flagBase == null || mine == null ||
-				mineShade == null || numberOne == null || numberTwo == null || numberThree == null || numberFour == null || numberFive == null ||
-				numberSix == null || numberSeven == null || numberEight == null || title == null || titleOutline == null || text == null
+				background == null || backgroundLighterShade == null || backgroundDarkerShade == null || border == null || backgroundExplodedMine == null ||
+				overlay == null || cross == null || flag == null || flagBase == null || mine == null || mineShade == null || numberOne == null ||
+				numberTwo == null || numberThree == null || numberFour == null || numberFive == null || numberSix == null || numberSeven == null ||
+				numberEight == null || title == null || titleOutline == null || text == null || selectedDifficulty == null
 		) {
 			throw new IllegalArgumentException("Theme colors cannot be null. Check the JSON fields.");
 		}

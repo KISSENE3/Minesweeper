@@ -50,7 +50,7 @@ public abstract class MinesweeperButton extends MyAbstractButton {
 	public MinesweeperButton(@NotNull Rectangle bounds, @Nullable String label) {
 		super(bounds);
 		this.label = label;
-		this.font = new Font("SansSerif", Font.BOLD, (int)(this.getHeight() * 0.4));
+		this.font = new Font("Monospaced", Font.BOLD, (int)(this.getHeight() * 0.4));
 	}
 	
 	/* ---------- CONSTRUCTORS ---------- */
@@ -71,6 +71,8 @@ public abstract class MinesweeperButton extends MyAbstractButton {
 	public Font getFont() {
 		return this.font;
 	}
+	
+	public abstract void onClick(@NotNull MouseEvent e);
 	
 	public abstract Theme getTheme();
 	/* ---------- GETTERS/SETTERS ---------- */
@@ -150,11 +152,15 @@ public abstract class MinesweeperButton extends MyAbstractButton {
 	
 	@Override
 	public void onPress(@NotNull MouseEvent e) {
+		if (e.getButton() != MouseEvent.BUTTON1)
+			return;
 		this.pressed = true;
 	}
 	
 	@Override
 	public void onRelease(@NotNull MouseEvent e) {
+		if (e.getButton() != MouseEvent.BUTTON1)
+			return;
 		this.pressed = false;
 	}
 	

@@ -25,6 +25,7 @@ public interface Drawable {
 	default void drawTooltip(@NotNull Graphics2D g, MouseEvent e) {}
 	
 	/** Gets the visible state of the component. */
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	@Contract(pure = true)
 	boolean isVisible();
 	

@@ -6,7 +6,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
+import java.util.List;
 
 @SuppressWarnings("unused")
 public class ScreenManager {
@@ -15,7 +17,7 @@ public class ScreenManager {
 	private final Frame frame;
 	private final Settings settings;
 	
-	public ScreenManager(Canvas canvas, Frame frame, Settings settings) {
+	public ScreenManager(@NotNull Canvas canvas, @NotNull Frame frame, @NotNull Settings settings) {
 		this.canvas = canvas;
 		this.frame = frame;
 		this.settings = settings;
@@ -27,7 +29,7 @@ public class ScreenManager {
 	}
 	
 	/** Adds a new {@link Screen} in the stack (without destroying the current one). */
-	public void pushScreen(Screen newScreen) {
+	public void pushScreen(@NotNull Screen newScreen) {
 		if (!this.screenStack.isEmpty()) {
 			removeListeners(this.screenStack.peek());
 		}
@@ -43,36 +45,83 @@ public class ScreenManager {
 	public void popScreen() {
 		if (this.screenStack.size() <= 1)
 			return;
-		Screen poppedScreen = this.screenStack.pop();
-		this.removeListeners(poppedScreen);
-		AppLogger.info("Popped screen. Current screen: " + poppedScreen.getClass().getSimpleName());
-		assert this.screenStack.peek() != null;
-		this.applyScreen(this.screenStack.peek());
 		
+		AppLogger.info("Popped screen: " + this.screenStack.peek().getClass().getSimpleName());
+		this.screenStack.pop();
+		
+		assert this.screenStack.peek() != null;
+		Screen currentScreen = this.screenStack.peek();
+		
+		this.applyScreen(currentScreen);
+		AppLogger.info("Current screen: " + currentScreen.getClass().getSimpleName());
 	}
 	
 	private void applyScreen(@NotNull Screen screen) {
-		Dimension size = new Dimension(screen.getWidth(), screen.getHeight());
-		this.canvas.setPreferredSize(size);
-		this.frame.pack();
-		this.frame.setLocationRelativeTo(null);
+		for (Screen s : this.screenStack) {
+			if (s != screen)
+				this.removeListeners(s);
+		}
+		
+		if (!screen.isTransparent()) {
+			Dimension size = new Dimension(screen.getWidth(), screen.getHeight());
+			this.canvas.setPreferredSize(size);
+			this.frame.pack();
+			this.frame.setLocationRelativeTo(null);
+		}
 		
 		this.canvas.addMouseListener(screen.getComponentsManager());
+		this.canvas.addMouseWheelListener(screen.getComponentsManager());
 		this.canvas.addMouseMotionListener(screen.getComponentsManager());
 		this.canvas.addKeyListener(screen.getComponentsManager());
 		
-		this.canvas.createBufferStrategy(2);
+		if (this.canvas.getBufferStrategy() == null) {
+			this.canvas.createBufferStrategy(2);
+		}
 	}
 	
 	private void removeListeners(@NotNull Screen screen) {
 		this.canvas.removeMouseListener(screen.getComponentsManager());
+		this.canvas.removeMouseWheelListener(screen.getComponentsManager());
 		this.canvas.removeMouseMotionListener(screen.getComponentsManager());
 		this.canvas.removeKeyListener(screen.getComponentsManager());
+		screen.getComponentsManager().clearManager();
 	}
 	
-	public void draw(Graphics2D g) {
-		if (!this.screenStack.isEmpty()) {
-			this.screenStack.peek().draw(g);
+	public @NotNull Canvas getCanvas() {
+		return  this.canvas;
+	}
+	
+	public void draw(@NotNull Graphics2D g) {
+		if (this.screenStack.isEmpty()) {
+			return;
+		}
+
+		List<Screen> toDraw = new ArrayList<>();
+		for (Screen screen : this.screenStack) {
+			toDraw.addFirst(screen);
+			if (!screen.isTransparent())
+				break;
+		}
+		
+		Composite originalComposite = g.getComposite();
+		for (int i = 0; i < toDraw.size(); i++) {
+			Screen screen = toDraw.get(i);
+			
+			int tx = screen.getX();
+			int ty = screen.getY();
+			g.translate(tx, ty);
+			
+			screen.draw(g);
+			
+			g.translate(-tx, -ty);
+			
+			if (i < toDraw.size() - 1) {
+				g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
+				g.setColor(Color.BLACK);
+				g.fillRect(0, 0, this.canvas.getWidth(), this.canvas.getHeight());
+				
+				g.setComposite(originalComposite);
+			}
 		}
 	}
 }

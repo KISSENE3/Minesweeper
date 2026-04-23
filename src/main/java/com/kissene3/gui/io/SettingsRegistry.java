@@ -63,7 +63,7 @@ public class SettingsRegistry {
 	public static @NotNull Settings load() {
 		File file = new File(FILE_PATH);
 		if (!file.exists()) {
-			AppLogger.info("Setting file not found, using default.");
+			AppLogger.info("Settings file not found, using default.");
 			return new Settings();
 		}
 		

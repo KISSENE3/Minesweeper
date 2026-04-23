@@ -3,7 +3,9 @@ package com.kissene3.gui;
 import com.kissene3.gui.components.*;
 import com.kissene3.gui.interfaces.*;
 import com.kissene3.gui.interfaces.Container;
+import com.kissene3.gui.screens.Screen;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
 import java.awt.event.*;
@@ -14,6 +16,8 @@ import java.util.List;
 public class MyGUIManager extends MouseAdapter implements KeyListener {
 	
 	/* ---------- ATTRIBUTES ---------- */
+	
+	private final Screen parentScreen;
 	
 	private final List<MyComponent> components = new ArrayList<>();
 	
@@ -36,13 +40,17 @@ public class MyGUIManager extends MouseAdapter implements KeyListener {
 	/* ---------- ATTRIBUTES FOR HANDLING INTERFACES ---------- */
 	/* ---------- CONSTRUCTORS ---------- */
 	
-	public MyGUIManager() {}
+	public MyGUIManager(Screen parentScreen) {
+		this.parentScreen = parentScreen;
+	}
 	
-	public MyGUIManager(MyComponent component) {
+	public MyGUIManager(Screen parentScreen, MyComponent component) {
+		this(parentScreen);
 		this.components.add(component);
 	}
 	
-	public MyGUIManager(List<MyComponent> components) {
+	public MyGUIManager(Screen parentScreen, List<MyComponent> components) {
+		this(parentScreen);
 		this.components.addAll(components);
 	}
 	
@@ -52,13 +60,14 @@ public class MyGUIManager extends MouseAdapter implements KeyListener {
 	@Override
 	public void mousePressed(@NotNull MouseEvent e) {
 		this.lastMouseEvent = e;
+		Point p = this.getAdjustedPoint(e);
 		
 		boolean hitSomething = false;
 		
 		for (int i = this.components.size() - 1; i >= 0; i--) {
 			MyComponent component = this.components.get(i);
 			
-			if (!component.isActive() || !component.contains(e.getX(), e.getY()))
+			if (!component.isActive() || !component.contains(p.x, p.y))
 				continue;
 			
 			hitSomething = true;
@@ -80,6 +89,7 @@ public class MyGUIManager extends MouseAdapter implements KeyListener {
 	@Override
 	public void mouseReleased(@NotNull MouseEvent e) {
 		this.lastMouseEvent = e;
+		Point p = this.getAdjustedPoint(e);
 		
 		if (this.lastPressed == null)
 			return;
@@ -89,7 +99,7 @@ public class MyGUIManager extends MouseAdapter implements KeyListener {
 		for (int i = this.components.size() - 1; i >= 0; i--) {
 			MyComponent component = this.components.get(i);
 			
-			if (!component.isActive() || !component.contains(e.getX(), e.getY()))
+			if (!component.isActive() || !component.contains(p.x, p.y))
 				continue;
 			
 			if (component instanceof Clickable clickable && this.lastPressed == clickable)
@@ -101,6 +111,26 @@ public class MyGUIManager extends MouseAdapter implements KeyListener {
 	}
 	
 	/* ---------- @Override MouseListener ---------- */
+	/* ---------- @Override MouseWheelListener ---------- */
+	
+	@Override
+	public void mouseWheelMoved(MouseWheelEvent e) {
+		this.lastMouseEvent = e;
+		Point p = this.getAdjustedPoint(e);
+		
+		for (int i = this.components.size() - 1; i >= 0; i--) {
+			MyComponent component = this.components.get(i);
+			
+			if (component.isActive() && component.contains(p.x, p.y)) {
+				if (component instanceof Scrollable scrollable) {
+					scrollable.onMouseWheel(e);
+					return;
+				}
+			}
+		}
+	}
+	
+	/* ---------- @Override MouseWheelListener ---------- */
 	/* ---------- @Override MouseMotionListener ---------- */
 	
 	@Override
@@ -115,9 +145,9 @@ public class MyGUIManager extends MouseAdapter implements KeyListener {
 		
 		for (int i = this.components.size() - 1; i >= 0; i--) {
 			MyComponent component = this.components.get(i);
+			Point p = this.getAdjustedPoint(e);
 			
-			
-			if (component.isActive() && component instanceof Hoverable hoverable && component.contains(e.getX(), e.getY())) {
+			if (component.isActive() && component instanceof Hoverable hoverable && component.contains(p.x, p.y)) {
 				currentHovered = hoverable;
 				break;
 			}
@@ -182,7 +212,7 @@ public class MyGUIManager extends MouseAdapter implements KeyListener {
 	/* ---------- @Override KeyListener ---------- */
 	/* ---------- UTILITY ---------- */
 	
-	private void handleFocusChange(MyComponent clicked) {
+	public void handleFocusChange(MyComponent clicked) {
 		if (this.focusedComponent == clicked)
 			return;
 		
@@ -201,6 +231,11 @@ public class MyGUIManager extends MouseAdapter implements KeyListener {
 		
 		this.focusedComponent.setFocus(false);
 		this.focusedComponent = null;
+	}
+	
+	public void clearManager() {
+		this.clearFocus();
+		this.mouseExited(this.lastMouseEvent);
 	}
 	
 	/* ---------- UTILITY ---------- */
@@ -255,6 +290,18 @@ public class MyGUIManager extends MouseAdapter implements KeyListener {
 			maxH = Math.max(maxH, component.getY() + component.getHeight());
 		}
 		return new Dimension(maxW, maxH);
+	}
+	
+	public Screen getParentScreen() {
+		return this.parentScreen;
+	}
+	
+	private @NotNull Point getAdjustedPoint(@Nullable MouseEvent e) {
+		if (e == null) {
+			return new Point(-1, -1);
+		}
+		
+		return new Point(e.getX() - this.parentScreen.getX(), e.getY() - this.parentScreen.getY());
 	}
 	
 	/* ---------- GETTERS/SETTERS ---------- */
