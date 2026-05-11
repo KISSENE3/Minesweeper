@@ -5,17 +5,18 @@ import com.kissene3.gui.*;
 import com.kissene3.gui.MyUtilities.*;
 import com.kissene3.gui.MyUtilities.Dimension;
 import com.kissene3.gui.components.*;
-import com.kissene3.gui.interfaces.Container;
+import com.kissene3.gui.interfaces.Scrollable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
 import java.util.LinkedList;
 import java.util.Random;
 
 @SuppressWarnings("unused")
-public class Grid extends MyAbstractButton implements Container {
+public class Grid extends MyAbstractButton implements Scrollable {
 	
 	/* ---------- FINAL GAME ATTRIBUTES ---------- */
 	
@@ -72,6 +73,18 @@ public class Grid extends MyAbstractButton implements Container {
 	
 	/** The last pressed cell. Used to handle clicks. */
 	private Cell lastPressed = null;
+	
+	/** The index for the horizontal scrolling. */
+	private int scrollX = 0;
+	
+	/** The index for the vertical scrolling. */
+	private int scrollY = 0;
+	
+	/** The visible width of the grid. */
+	private int viewWidth;
+	
+	/** The visible height of the grid. *  */
+	private int viewHeight;
 	
 	/* ---------- GUI ATTRIBUTES ---------- */
 	/* ---------- CONSTRUCTORS ---------- */
@@ -214,6 +227,16 @@ public class Grid extends MyAbstractButton implements Container {
 		}
 	}
 	
+	public void setViewport(int w, int h) {
+		this.viewWidth = w;
+		this.viewHeight = h;
+	}
+	
+	public void updateScroll(int sx, int sy) {
+		this.scrollX = sx;
+		this.scrollY = sy;
+	}
+	
 	/* ---------- GUI GETTERS/SETTERS ---------- */
 	/* ---------- INITIALIZERS ---------- */
 	
@@ -224,30 +247,13 @@ public class Grid extends MyAbstractButton implements Container {
 	 */
 	private void initializeGrid(int r, int c) {
 		this.firstMove = false;
-		this.placeMines(r, c);	// TODO: REMOVE ALSO THIS COMMENTING OUT, DEBUG ONLY
+		this.placeMines(r, c);
 		
 		for (Cell[] row : this.grid) {
 			for (Cell cell : row) {
 				cell.checkNear();
 			}
 		}
-		
-		// TODO: REMOVE THIS, DEBUG ONLY
-		
-//		this.grid[0][0].setDisplay(CellDisplay.ZERO);
-//		this.grid[0][1].setDisplay(CellDisplay.ONE);
-//		this.grid[0][2].setDisplay(CellDisplay.TWO);
-//		this.grid[0][3].setDisplay(CellDisplay.THREE);
-//		this.grid[0][4].setDisplay(CellDisplay.MINE);
-//		this.grid[1][0].setDisplay(CellDisplay.FOUR);
-//		this.grid[1][1].setDisplay(CellDisplay.FIVE);
-//		this.grid[1][2].setDisplay(CellDisplay.SIX);
-//		this.grid[1][3].setDisplay(CellDisplay.SEVEN);
-//		this.grid[1][4].setDisplay(CellDisplay.MINE);
-//		this.grid[2][0].setDisplay(CellDisplay.EIGHT);
-//		this.grid[2][1].setDisplay(CellDisplay.MINE);
-		
-		// TODO: REMOVE THIS, DEBUG ONLY
 	}
 	
 	/**
@@ -335,7 +341,6 @@ public class Grid extends MyAbstractButton implements Container {
 			startingCell.explode();
 			this.gameStatus = Status.LOST;
 			this.showAllMines();
-			this.freezeGrid();
 			return 0;
 		}
 		
@@ -372,7 +377,6 @@ public class Grid extends MyAbstractButton implements Container {
 		if (this.cellsToReveal == 0) {
 			this.gameStatus = Status.WON;
 			this.flagAllMines();
-			this.freezeGrid();
 		}
 		return 0;
     }
@@ -384,9 +388,11 @@ public class Grid extends MyAbstractButton implements Container {
 	 */
 	public void showAllMines() {
 		for (Cell[] rows : this.grid)
-			for (Cell cell : rows)
+			for (Cell cell : rows) {
+				cell.setActive(false);
 				if (cell.isMine())
 					cell.reveal();
+			}
 	}
 	
 	/**
@@ -396,18 +402,11 @@ public class Grid extends MyAbstractButton implements Container {
 	 */
 	public void flagAllMines() {
 		for (Cell[] rows : this.grid)
-			for (Cell cell : rows)
+			for (Cell cell : rows) {
+				cell.setActive(false);
 				if (cell.isMine() && !cell.isFlagged())
 					cell.toggleFlagged();
-	}
-	
-	/**
-	 * Sets the grid to inactive, preventing further user interaction.
-	 * It's intended to be called if the main.java.com.kissene3.game ends.
-	 * (aka. {@link Status#WON} or {@link Status#LOST})
-	 */
-	public void freezeGrid() {
-		this.isActive = false;
+			}
 	}
 	
 	/* ---------- LOGIC ---------- */
@@ -447,12 +446,45 @@ public class Grid extends MyAbstractButton implements Container {
 		if (!this.isVisible())
 			return;
 		
-		for (Cell[] row : this.grid) {
-			for (Cell cell : row) {
-				if (!cell.isVisible())
-					continue;
-				cell.draw(g);
+		Shape oldClip = g.getClip();
+		
+		g.setClip(this.getX(), this.getY(), this.viewWidth, this.viewHeight);
+
+		int startRow = Math.max(0, this.scrollY / this.cellSize);
+		int endRow = Math.min(this.rows, (this.scrollY + this.viewHeight) / this.cellSize + 1);
+		int startCol = Math.max(0, this.scrollX / this.cellSize);
+		int endCol = Math.min(this.columns, (this.scrollX + this.viewWidth) / this.cellSize + 1);
+		
+		g.translate(-this.scrollX, -this.scrollY);
+		
+		for (int r = startRow; r < endRow; r++) {
+			for (int c = startCol; c < endCol; c++) {
+				this.grid[r][c].draw(g);
 			}
+		}
+		
+		g.translate(this.scrollX, this.scrollY);
+		
+		this.drawScrollbars(g);
+		
+		g.setClip(oldClip);
+	}
+	
+	private void drawScrollbars(@NotNull Graphics2D g) {
+		g.setColor(this.settings.getTheme().scrollBar());
+		
+		// Vertical
+		if (this.getHeight() > this.viewHeight) {
+			int barH = (this.viewHeight * this.viewHeight) / this.getHeight();
+			int barY = (this.scrollY * this.viewHeight) / this.getHeight();
+			g.fillRect(this.getX() + this.viewWidth - 6, this.getY() + barY, 4, barH);
+		}
+		
+		// Horizontal
+		if (this.getWidth() > this.viewWidth) {
+			int barW = (this.viewWidth * this.viewWidth) / this.getWidth();
+			int barX = (this.scrollX * this.viewWidth) / this.getWidth();
+			g.fillRect(this.getX() + barX, this.getY() + this.viewHeight - 6, barW, 4);
 		}
 	}
 	
@@ -523,11 +555,8 @@ public class Grid extends MyAbstractButton implements Container {
 		}
 	}
 	
-	/* ---------- @Override Hoverable ---------- */
-	/* ---------- @Override Container ---------- */
-
 	@Override
-	public void handleMouseMovement(@NotNull MouseEvent e) {
+	public void onHover(@NotNull MouseEvent e) {
 		if (!this.isVisible || !this.isActive)
 			return;
 		
@@ -550,15 +579,41 @@ public class Grid extends MyAbstractButton implements Container {
 		}
 	}
 	
-	/* ---------- @Override Container ---------- */
+	/* ---------- @Override Hoverable ---------- */
+	/* ---------- @Override Scrollable ---------- */
+	
+	@Override
+	public void onMouseWheel(@NotNull MouseWheelEvent e) {
+		if (e.isShiftDown()) {
+			this.scrollX += e.getWheelRotation() * this.cellSize;
+		} else {
+			this.scrollY += e.getWheelRotation() * this.cellSize;
+		}
+		
+		this.scrollX = Math.max(0, Math.min(this.scrollX, this.getWidth() - this.viewWidth));
+		this.scrollY = Math.max(0, Math.min(this.scrollY, this.getHeight() - this.viewHeight));
+		
+		this.onHover(e);
+	}
+	
+	/* ---------- @Override Scrollable ---------- */
 	/* ---------- UTILITY ---------- */
 	
 	/** From the {@link MouseEvent} gets the coordinates and calculates and returns the cell under the mouse pointer. */
 	private @Nullable Cell getCellFromMouse(@NotNull MouseEvent e) {
-		int mx = e.getX();
-		int my = e.getY();
-		int r = (my - this.getY()) / this.cellSize;
-		int c = (mx - this.getX()) / this.cellSize;
+		int mx = e.getX() - this.getX() + this.scrollX;
+		int my = e.getY() - this.getY() + this.scrollY;
+		
+		if (
+				e.getX() < this.getX() ||
+				e.getX() > this.getX() + this.viewWidth ||
+				e.getY() < this.getY() ||
+				e.getY() > this.getY() + this.viewHeight
+		)
+			return null;
+		
+		int r = my / this.cellSize;
+		int c = mx / this.cellSize;
 		
 		if (r < 0 || r >= this.rows || c < 0 || c >= this.columns)
 			return null;

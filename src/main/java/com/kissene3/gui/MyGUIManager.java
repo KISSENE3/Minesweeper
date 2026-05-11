@@ -2,7 +2,6 @@ package com.kissene3.gui;
 
 import com.kissene3.gui.components.*;
 import com.kissene3.gui.interfaces.*;
-import com.kissene3.gui.interfaces.Container;
 import com.kissene3.gui.screens.Screen;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -55,6 +54,13 @@ public class MyGUIManager extends MouseAdapter implements KeyListener {
 	}
 	
 	/* ---------- CONSTRUCTORS ---------- */
+	
+	public void onTick() {
+		for (MyComponent component : this.components) {
+			if (component instanceof Tickable tickable)
+				tickable.tick();
+		}
+	}
 	/* ---------- @Override MouseListener ---------- */
 	
 	@Override
@@ -167,8 +173,6 @@ public class MyGUIManager extends MouseAdapter implements KeyListener {
 		
 		if (currentHovered != null) {
 			currentHovered.onHover(e);
-			if (currentHovered instanceof Container container)
-				container.handleMouseMovement(e);
 		}
 	}
 	
@@ -314,10 +318,6 @@ public class MyGUIManager extends MouseAdapter implements KeyListener {
 			if (!drawable.isVisible())
 				continue;
 			drawable.draw(g);
-			
-			if (this.lastMouseEvent == null || !(drawable instanceof Container container))
-				continue;
-			container.handleDraw(g, this.lastMouseEvent);
 		}
 		
 		if (this.lastHovered == null || this.lastMouseEvent == null || !(this.lastHovered instanceof Drawable drawable) || !drawable.isVisible())

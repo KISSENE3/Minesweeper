@@ -2,6 +2,7 @@ package com.kissene3.gui.io;
 
 import com.google.gson.*;
 import com.kissene3.gui.Theme;
+import com.kissene3.main.Main;
 import org.jetbrains.annotations.*;
 
 import java.awt.*;
@@ -44,7 +45,7 @@ public class ThemeRegistry {
 	private static final Map<String, Boolean> CACHE = new HashMap<>();
 	
 	// Constants
-	private static final String EXTERNAL_DIR = "data/themes/";
+	private static final String EXTERNAL_DIR = Main.BASE_PATH + "themes" + File.separator;
 	private static final String INTERNAL_DIR = "/themes/";
 	private static final String[] DEFAULTS = {"light", "dark"};
 	
@@ -118,7 +119,8 @@ public class ThemeRegistry {
 				new Color(255,   0,   0, 255),		// Title
 				new Color(  0,   0,   0, 255),		// Title outline
 				new Color(  0,   0,   0, 255),		// Text
-				new Color( 64, 144, 255, 255)		// Selected difficulty
+				new Color( 64, 144, 255, 255),		// Selected difficulty
+				new Color(  0,   0,   0, 102)		// Scroll bar
 		));
 	}
 	

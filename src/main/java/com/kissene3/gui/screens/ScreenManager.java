@@ -47,13 +47,21 @@ public class ScreenManager {
 			return;
 		
 		AppLogger.info("Popped screen: " + this.screenStack.peek().getClass().getSimpleName());
-		this.screenStack.pop();
+		this.removeListeners(this.screenStack.pop());
 		
 		assert this.screenStack.peek() != null;
 		Screen currentScreen = this.screenStack.peek();
 		
 		this.applyScreen(currentScreen);
 		AppLogger.info("Current screen: " + currentScreen.getClass().getSimpleName());
+	}
+	
+	public void popAll() {
+		while (!this.screenStack.isEmpty()) {
+			this.removeListeners(this.screenStack.peek());
+			this.screenStack.pop();
+		}
+		AppLogger.info("Popped all screens.");
 	}
 	
 	private void applyScreen(@NotNull Screen screen) {
@@ -65,6 +73,7 @@ public class ScreenManager {
 		if (!screen.isTransparent()) {
 			Dimension size = new Dimension(screen.getWidth(), screen.getHeight());
 			this.canvas.setPreferredSize(size);
+			this.canvas.setSize(size);
 			this.frame.pack();
 			this.frame.setLocationRelativeTo(null);
 		}
@@ -123,5 +132,11 @@ public class ScreenManager {
 				g.setComposite(originalComposite);
 			}
 		}
+	}
+	
+	public void onTick() {
+		if (this.screenStack.isEmpty())
+			return;
+		this.screenStack.peek().onTick();
 	}
 }

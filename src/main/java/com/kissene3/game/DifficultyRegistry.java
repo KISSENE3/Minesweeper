@@ -2,6 +2,7 @@ package com.kissene3.game;
 
 import com.google.gson.Gson;
 import com.kissene3.gui.io.AppLogger;
+import com.kissene3.main.Main;
 import org.jetbrains.annotations.*;
 
 import java.io.*;
@@ -17,7 +18,7 @@ public class DifficultyRegistry {
 	private static final Map<String, Boolean> CACHE = new HashMap<>();
 	
 	// Constants
-	private static final String EXTERNAL_DIR = "data/difficulties/";
+	private static final String EXTERNAL_DIR = Main.BASE_PATH + "difficulties" + File.separator;
 	private static final String INTERNAL_DIR = "/difficulties/";
 	private static final String[] DEFAULTS = {"easy", "medium", "hard"};
 	

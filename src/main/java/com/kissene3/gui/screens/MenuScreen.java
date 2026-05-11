@@ -136,6 +136,11 @@ public class MenuScreen extends Screen {
 		
 		this.componentsManager.draw(g);
 	}
+	
+	@Override
+	public void onTick() {
+		this.componentsManager.onTick();
+	}
 }
 
 class MenuCell {

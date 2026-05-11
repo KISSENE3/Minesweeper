@@ -21,5 +21,6 @@
   "title": "#FFA00000",
   "title_outline": "#FF808080",
   "text": "#FFFFFFFF",
-  "selected_difficulty": "#FF3050AA"
+  "selected_difficulty": "#FF3050AA",
+  "scroll_bar": "#80A0A0A0"
 }

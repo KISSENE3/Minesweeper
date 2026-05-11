@@ -50,7 +50,10 @@ public class DifficultyScreen extends Screen {
 				} else {
 					this.manager.getSettings().setDifficulty(this.difficulty, null);
 				}
-				// TODO: start the game
+				
+				DifficultyScreen.this.manager.popAll();
+				DifficultyScreen.this.manager.pushScreen(new GameScreen(DifficultyScreen.this.manager, this.manager.getSettings().getCurrentDifficulty()));
+				
 			}));
 		
 		this.textBoxes[0] = this.getMyTextbox(128);
@@ -206,6 +209,11 @@ public class DifficultyScreen extends Screen {
 	@Override
 	public int getHeight() {
 		return 512;
+	}
+	
+	@Override
+	public void onTick() {
+		this.componentsManager.onTick();
 	}
 	
 	@Override

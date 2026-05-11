@@ -72,6 +72,10 @@ public abstract class MinesweeperButton extends MyAbstractButton {
 		return this.font;
 	}
 	
+	public int getP() {
+		return 4;
+	}
+	
 	public abstract void onClick(@NotNull MouseEvent e);
 	
 	public abstract Theme getTheme();
@@ -84,7 +88,7 @@ public abstract class MinesweeperButton extends MyAbstractButton {
 			return;
 		}
 		
-		int p = 5;
+		int p = this.getP();
 		
 		this.drawBackground(g);
 		

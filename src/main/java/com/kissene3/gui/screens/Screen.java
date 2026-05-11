@@ -32,6 +32,7 @@ public abstract class Screen {
 	public abstract int getWidth();
 	public abstract int getHeight();
 	public abstract void draw(@NotNull Graphics2D g);
+	public abstract void onTick();
 	
 	/* ---------- ABSTRACTS ---------- */
 	/* ---------- GETTERS/SETTERS ---------- */

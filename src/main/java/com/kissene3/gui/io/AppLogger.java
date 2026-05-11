@@ -1,5 +1,7 @@
 package com.kissene3.gui.io;
 
+import com.kissene3.main.Main;
+
 import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -11,11 +13,7 @@ public class AppLogger {
 	
 	public static void init() {
 		try {
-			File logDir = new File("data/saves");
-			if (!logDir.exists()) //noinspection ResultOfMethodCallIgnored
-				logDir.mkdirs();
-			
-			FileHandler fh = new FileHandler("data/saves/log.txt", true);
+			FileHandler fh = new FileHandler(Main.BASE_PATH + "logs" + File.separator + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss")) + ".txt", true);
 			
 			fh.setFormatter(new Formatter() {
 				private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");

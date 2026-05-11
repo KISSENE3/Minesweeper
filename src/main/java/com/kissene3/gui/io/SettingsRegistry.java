@@ -2,13 +2,14 @@ package com.kissene3.gui.io;
 
 import com.google.gson.*;
 import com.kissene3.gui.Settings;
+import com.kissene3.main.Main;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.nio.file.*;
 
 public class SettingsRegistry {
-	private static final String FILE_PATH = "data/saves/settings.json";
+	private static final String FILE_PATH = Main.BASE_PATH + "saves" + File.separator + "settings.json";
 	private static final String TEMP_PATH = FILE_PATH + ".tmp";
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 	

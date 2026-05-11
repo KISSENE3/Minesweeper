@@ -17,10 +17,10 @@ public class GUIMain {
 	
 	public GUIMain() {
 		AppLogger.init();
+		AppLogger.info("Booting...");
 		DifficultyRegistry.init();
 		ThemeRegistry.init();
 		this.settings = SettingsRegistry.load();
-		AppLogger.info("Booting...");
 		this.start();
 	}
 	
@@ -32,19 +32,20 @@ public class GUIMain {
 		frame.add(canvas);
 		frame.setVisible(true);
 		
-		ScreenManager screenManager = new ScreenManager(canvas, frame, settings);
+		ScreenManager screenManager = new ScreenManager(canvas, frame, this.settings);
 		screenManager.pushScreen(new MenuScreen(screenManager));
 		
 		
 		frame.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
 				SettingsRegistry.save(settings);
-				AppLogger.info("Quitting...\n\n");
+				AppLogger.info("Quitting...");
 				System.exit(0);
 			}
 		});
 		
 		this.startRendering(canvas, screenManager);
+		this.startTicking(screenManager);
 	}
 	
 	private void startRendering(Canvas canvas, ScreenManager sm) {
@@ -66,6 +67,29 @@ public class GUIMain {
 				
 				try { //noinspection BusyWait
 					Thread.sleep(16);
+				} catch (Exception _) {}
+			}
+		}).start();
+	}
+	
+	private void startTicking(ScreenManager sm) {
+		new Thread(() -> {
+			long lastTime = System.nanoTime();
+			double nsPerTick = 1000000000.0 / 30.0;	// 30 TPS
+			double delta = 0;
+			
+			while (true) {
+				long now = System.nanoTime();
+				delta += (now - lastTime) / nsPerTick;
+				lastTime = now;
+				
+				while (delta >= 1) {
+					sm.onTick();
+					delta--;
+				}
+				
+				try { //noinspection BusyWait
+					Thread.sleep(25);
 				} catch (Exception _) {}
 			}
 		}).start();
