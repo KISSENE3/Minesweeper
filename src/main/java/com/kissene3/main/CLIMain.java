@@ -16,8 +16,6 @@ public class CLIMain {
 	private boolean running = true;
 	
 	private void init() {
-		DifficultyRegistry.init();
-		
 		System.out.println(ConsoleColor.GREEN_BRIGHT + "Welcome to Minesweeper\n" + ConsoleColor.RESET);
 		System.out.flush();
 		

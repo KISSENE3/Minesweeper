@@ -3,6 +3,7 @@ package com.kissene3.main;
 import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Map;
 
@@ -51,12 +52,12 @@ public class Main {
 	private static void copyResourceToFile(String resourcePath, String destinationSubPath) {
 		File destination = new File(BASE_PATH + destinationSubPath);
 		
-		if (destination.exists())
+		if (destination.exists() && !resourcePath.endsWith("README.md"))
 			return;
 		
 		try (InputStream is = Main.class.getResourceAsStream(resourcePath)) {
 			if (is != null) {
-				Files.copy(is, destination.toPath());
+				Files.copy(is, destination.toPath(), StandardCopyOption.REPLACE_EXISTING);
 			}
 		} catch (Exception e) {
 			System.err.println("Error while copying resource to file: " + resourcePath + ": " + e.getMessage());

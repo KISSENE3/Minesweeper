@@ -22,11 +22,15 @@ public class DifficultyRegistry {
 	private static final String INTERNAL_DIR = "/difficulties/";
 	private static final String[] DEFAULTS = {"easy", "medium", "hard"};
 	
+	static {
+		init();
+	}
+	
 	/**
 	 * Scans every file and populate the {@code Map}.
 	 * To be called at the start of the application.
 	 */
-	public static void init() {
+	private static void init() {
 		CACHE.clear();
 		
 		// 1. Loads the defaults from Resources.

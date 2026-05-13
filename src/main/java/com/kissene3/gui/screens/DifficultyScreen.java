@@ -2,7 +2,7 @@ package com.kissene3.gui.screens;
 
 import com.kissene3.game.Difficulty;
 import com.kissene3.game.DifficultyRegistry;
-import com.kissene3.gui.MyUtilities.Rectangle;
+import com.kissene3.gui.utilities.MyUtilities.Rectangle;
 import com.kissene3.gui.Theme;
 import com.kissene3.gui.components.MinesweeperButton;
 import com.kissene3.gui.components.MyLabel;

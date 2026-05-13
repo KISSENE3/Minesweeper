@@ -3,6 +3,8 @@ package com.kissene3.gui;
 import com.google.gson.annotations.SerializedName;
 import com.kissene3.game.*;
 import com.kissene3.gui.io.ThemeRegistry;
+import com.kissene3.gui.utilities.TextureManager;
+import com.kissene3.gui.utilities.Textures;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -41,6 +43,8 @@ public class Settings {
 	private void setCellSize(@NotNull CellSize cellSize) {
 		this.cellSize = cellSize;
 		this.cellSizeKey = cellSize.name();
+		
+		TextureManager.invalidateAll();
 	}
 	
 	public @NotNull CellSize getCellSize() {
@@ -63,6 +67,8 @@ public class Settings {
 	public void setTheme(@NotNull String key) {
 		this.themeKey = key.toLowerCase();
 		this.theme = null;
+		
+		TextureManager.invalidateAll();
 	}
 	
 	public @NotNull Theme getTheme() {

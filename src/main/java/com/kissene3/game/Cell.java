@@ -3,6 +3,10 @@ package com.kissene3.game;
 import com.kissene3.console.*;
 import com.kissene3.gui.*;
 import com.kissene3.gui.components.*;
+import com.kissene3.gui.screens.MenuScreen;
+import com.kissene3.gui.utilities.MyUtilities;
+import com.kissene3.gui.utilities.MyUtilities.Dimension;
+import com.kissene3.gui.utilities.Textures;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
@@ -20,6 +24,8 @@ public class Cell extends MyAbstractButton {
 	protected final int column;
 	
 	protected final Grid grid;
+	
+	private final Textures textures;
 	
 	/* ---------- FINAL ATTRIBUTES ---------- */
 	/* ---------- ATTRIBUTES ---------- */
@@ -64,13 +70,122 @@ public class Cell extends MyAbstractButton {
 		this.column = column;
 		this.grid = grid;
 		this.init();
-	}
-	
-	protected Cell(int x, int y, int size) {
-		super(x, y, size, size);
-		this.grid = null;
-		this.row = 0;
-		this.column = 0;
+		this.textures = new Textures() {
+			@Override
+			protected MyUtilities.@NotNull Dimension getAssetDimension(@NotNull Key key) {
+				return switch (key) {
+					case BACKGROUND, EXPLODED, CLOSED, REVEALED, MINE, FLAG, CROSS,
+						 ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT ->  new Dimension(
+							Cell.this.grid.getSettings().getCellSize().getSize(),
+							Cell.this.grid.getSettings().getCellSize().getSize()
+					);
+					default ->  throw new UnsupportedOperationException("This should never happen.");
+				};
+			}
+			
+			@Override
+			protected void drawMapping(@NotNull Graphics2D g, @NotNull Key key, MyUtilities.@NotNull Dimension dimension) {
+				switch (key) {
+					case BACKGROUND -> this.drawBackground(
+							g,
+							new MyUtilities.Coordinates(0, 0),
+							this.getAssetDimension(Key.BACKGROUND),
+							Cell.this.grid.getSettings().getTheme().background()
+					);
+					case EXPLODED -> this.drawBackground(
+							g,
+							new MyUtilities.Coordinates(0, 0),
+							this.getAssetDimension(Key.EXPLODED),
+							Cell.this.grid.getSettings().getTheme().backgroundExplodedMine()
+					);
+					case CLOSED -> this.drawClosed(
+							g,
+							Cell.this.grid.getSettings().getCellSize().getSize() / 16,
+							new MyUtilities.Coordinates(0, 0),
+							this.getAssetDimension(Key.CLOSED),
+							Cell.this.grid.getSettings().getTheme().backgroundLighterShade(),
+							Cell.this.grid.getSettings().getTheme().backgroundDarkerShade()
+					);
+					case REVEALED -> this.drawRevealed(
+							g,
+							Cell.this.grid.getSettings().getCellSize().getSize() / 16,
+							new MyUtilities.Coordinates(0, 0),
+							this.getAssetDimension(Key.REVEALED),
+							Cell.this.grid.getSettings().getTheme().border()
+					);
+					case MINE -> this.drawMine(
+							g,
+							Cell.this.grid.getSettings().getCellSize().getSize() / 16,
+							new MyUtilities.Coordinates(0, 0),
+							Cell.this.grid.getSettings().getTheme().mine(),
+							Cell.this.grid.getSettings().getTheme().mineShade()
+					);
+					case FLAG -> this.drawFlag(
+							g,
+							Cell.this.grid.getSettings().getCellSize().getSize() / 16,
+							new MyUtilities.Coordinates(0, 0),
+							Cell.this.grid.getSettings().getTheme().flag(),
+							Cell.this.grid.getSettings().getTheme().flagBase()
+					);
+					case CROSS -> this.drawCross(
+							g,
+							Cell.this.grid.getSettings().getCellSize().getSize() / 16,
+							new MyUtilities.Coordinates(0, 0),
+							this.getAssetDimension(Key.CROSS),
+							Cell.this.grid.getSettings().getTheme().cross()
+					);
+					case ONE -> this.drawNumberOne(
+							g,
+							Cell.this.grid.getSettings().getCellSize().getSize() / 16,
+							new MyUtilities.Coordinates(0, 0),
+							Cell.this.grid.getSettings().getTheme().numberOne()
+					);
+					case TWO -> this.drawNumberTwo(
+							g,
+							Cell.this.grid.getSettings().getCellSize().getSize() / 16,
+							new MyUtilities.Coordinates(0, 0),
+							Cell.this.grid.getSettings().getTheme().numberTwo()
+					);
+					case THREE -> this.drawNumberThree(
+							g,
+							Cell.this.grid.getSettings().getCellSize().getSize() / 16,
+							new MyUtilities.Coordinates(0, 0),
+							Cell.this.grid.getSettings().getTheme().numberThree()
+					);
+					case FOUR -> this.drawNumberFour(
+							g,
+							Cell.this.grid.getSettings().getCellSize().getSize() / 16,
+							new MyUtilities.Coordinates(0, 0),
+							Cell.this.grid.getSettings().getTheme().numberFour()
+					);
+					case FIVE -> this.drawNumberFive(
+							g,
+							Cell.this.grid.getSettings().getCellSize().getSize() / 16,
+							new MyUtilities.Coordinates(0, 0),
+							Cell.this.grid.getSettings().getTheme().numberFive()
+					);
+					case SIX -> this.drawNumberSix(
+							g,
+							Cell.this.grid.getSettings().getCellSize().getSize() / 16,
+							new MyUtilities.Coordinates(0, 0),
+							Cell.this.grid.getSettings().getTheme().numberSix()
+					);
+					case SEVEN -> this.drawNumberSeven(
+							g,
+							Cell.this.grid.getSettings().getCellSize().getSize() / 16,
+							new MyUtilities.Coordinates(0, 0),
+							Cell.this.grid.getSettings().getTheme().numberSeven()
+					);
+					case EIGHT -> this.drawNumberEight(
+							g,
+							Cell.this.grid.getSettings().getCellSize().getSize() / 16,
+							new MyUtilities.Coordinates(0, 0),
+							Cell.this.grid.getSettings().getTheme().numberEight()
+					);
+					default -> throw new UnsupportedOperationException("This should never happen.");
+				}
+			}
+		};
 	}
 	
 	/* ---------- CONSTRUCTORS ---------- */
@@ -217,16 +332,33 @@ public class Cell extends MyAbstractButton {
 		int p = this.getWidth() / 16;
 		Theme theme = this.getTheme();
 		
-		this.drawCellBackground(g, theme);
+		if (this.hasExploded)
+			g.drawImage(this.textures.getAsset(Textures.Key.EXPLODED), this.getX(), this.getY(), null);
+		else
+			g.drawImage(this.textures.getAsset(Textures.Key.BACKGROUND), this.getX(), this.getY(), null);
 		
 		if (!this.isRevealed) {
-			this.drawCellShades(g, p, theme);
-			
-			if (this.isFlagged)
-				this.drawFlag(g, p, theme);
+			g.drawImage(this.textures.getAsset(Textures.Key.CLOSED), this.getX(), this.getY(), null);
+			if (this.isFlagged) {
+				g.drawImage(this.textures.getAsset(Textures.Key.FLAG), this.getX(), this.getY(), null);
+				if (!this.isMine() && this.grid.getGameStatus() == Status.LOST)
+					g.drawImage(this.textures.getAsset(Textures.Key.CROSS), this.getX(), this.getY(), null);
+			}
 		} else {
-			this.drawCellBorder(g, p, theme);
-			this.drawContent(g, p, theme);
+			g.drawImage(this.textures.getAsset(Textures.Key.REVEALED), this.getX(), this.getY(), null);
+			
+			switch (this.display) {
+				case MINE -> g.drawImage(this.textures.getAsset(Textures.Key.MINE), this.getX(), this.getY(), null);
+				case ONE -> g.drawImage(this.textures.getAsset(Textures.Key.ONE), this.getX(), this.getY(), null);
+				case TWO -> g.drawImage(this.textures.getAsset(Textures.Key.TWO), this.getX(), this.getY(), null);
+				case THREE -> g.drawImage(this.textures.getAsset(Textures.Key.THREE), this.getX(), this.getY(), null);
+				case FOUR -> g.drawImage(this.textures.getAsset(Textures.Key.FOUR), this.getX(), this.getY(), null);
+				case FIVE -> g.drawImage(this.textures.getAsset(Textures.Key.FIVE), this.getX(), this.getY(), null);
+				case SIX -> g.drawImage(this.textures.getAsset(Textures.Key.SIX), this.getX(), this.getY(), null);
+				case SEVEN -> g.drawImage(this.textures.getAsset(Textures.Key.SEVEN), this.getX(), this.getY(), null);
+				case EIGHT -> g.drawImage(this.textures.getAsset(Textures.Key.EIGHT), this.getX(), this.getY(), null);
+				default -> {}
+			}
 		}
 		
 		this.drawOverlay(g, theme);
@@ -245,237 +377,6 @@ public class Cell extends MyAbstractButton {
 		
 		g.setColor(theme.overlay());
 		g.fillRect(this.getX(), this.getY(), this.getWidth(), this.getHeight());
-	}
-	
-	/** Draws the background of the cell, it changes the color if it's the mine that exploded. */
-	protected void drawCellBackground(@NotNull Graphics2D g, @NotNull Theme theme) {
-		g.setColor(this.hasExploded ? theme.backgroundExplodedMine() : theme.background());
-		g.fillRect(this.getX(), this.getY(), this.getWidth(), this.getHeight());
-	}
-	
-	/**
-	 * Draws the shades for the cell when it's not revealed.
-	 * @param g The {@link Graphics2D} object used for drawing.
-	 * @param p The pixel size of the cell.
-	 */
-	protected void drawCellShades(@NotNull Graphics2D g, int p, @NotNull Theme theme) {
-		int p2 = 2 * p;
-		int reducedSize = this.getWidth() - p;
-		int reducedSize2 = this.getWidth() - p2;
-		
-		g.setColor(theme.backgroundLighterShade());
-		g.fillRect(this.getX(), this.getY(), reducedSize, p);								// top top-line
-		g.fillRect(this.getX(), this.getY(), reducedSize2, p2);								// bottom top-line
-		g.fillRect(this.getX(), this.getY(), p, reducedSize);								// left left-line
-		g.fillRect(this.getX(), this.getY(), p2, reducedSize2);								// right left-line
-		
-		g.setColor(theme.backgroundDarkerShade());
-		g.fillRect(this.getX() + reducedSize, this.getY() + p, p, reducedSize);		// right right-line
-		g.fillRect(this.getX() + reducedSize2, this.getY() + p2, p, reducedSize2);	// left right-line
-		g.fillRect(this.getX() + p, this.getY() + reducedSize, reducedSize, p);		// bottom bottom-line
-		g.fillRect(this.getX() + p2, this.getY() + reducedSize2, reducedSize2, p);	// top bottom-line
-	}
-	
-	/**
-	 * Draws the flag.
-	 * @param g The {@link Graphics2D} object used for drawing.
-	 * @param p The pixel size of the cell.
-	 */
-	protected void drawFlag(@NotNull Graphics2D g, int p, @NotNull Theme theme) {
-		g.setColor(theme.flag());
-		g.fillRect(this.getX() + 7 * p, this.getY() + 3 * p, 2 * p, 5 * p);	// right column
-		g.fillRect(this.getX() + 5 * p, this.getY() + 4 * p, 2 * p, 3 * p);	// middle column
-		g.fillRect(this.getX() + 4 * p, this.getY() + 5 * p, p, p);						// left dot
-		
-		g.setColor(theme.flagBase());
-		g.fillRect(this.getX() + 8 * p, this.getY() + 8 * p, p, 2 * p);				// vertical pole
-		g.fillRect(this.getX() + 6 * p, this.getY() + 10 * p, 4 * p, p);			// top row
-		g.fillRect(this.getX() + 4 * p, this.getY() + 11 * p, 8 * p, 2 * p);	// bottom row
-		
-		if (this.isMine() || this.grid.getGameStatus() != Status.LOST)
-			return;
-		
-		this.drawCross(g, p, theme);
-	}
-	
-	/**
-	 * Draws a cross over the cell.
-	 * @param g The {@link Graphics2D} object used for drawing.
-	 * @param p The pixel size of the cell.
-	 */
-	protected void drawCross(@NotNull Graphics2D g, int p, @NotNull Theme theme) {
-		g.setStroke(new BasicStroke(p));
-		g.setColor(theme.cross());
-		g.drawLine(this.getX() + p, this.getY() + p, this.getX() + this.getWidth() - p, this.getY() + this.getHeight() - p);
-		g.drawLine(this.getX() + this.getWidth() - p, this.getY() + p, this.getX() + p, this.getY() + this.getHeight() - p);
-		g.setStroke(new BasicStroke(1));
-	}
-	
-	/**
-	 * Draws the border for the cell when it's revealed.
-	 * @param g The {@link Graphics2D} object used for drawing.
-	 * @param p The pixel size of the cell.
-	 */
-	protected void drawCellBorder(@NotNull Graphics2D g, int p, @NotNull Theme theme) {
-		g.setColor(theme.border());
-		g.fillRect(this.getX(), this.getY(), this.getWidth(), p);	// top line
-		g.fillRect(this.getX(), this.getY(), p, this.getHeight());	// left line
-	}
-	
-	/**
-	 * Draws the content of the cell when it's revealed (mine or number).
-	 * @param g The {@link Graphics2D} object used for drawing.
-	 * @param p The pixel size of the cell.
-	 */
-	protected void drawContent(@NotNull Graphics2D g, int p, @NotNull Theme theme) {
-		if (this.display == CellDisplay.MINE) {
-			this.drawMine(g, p, theme);
-			return;
-		}
-		if (this.display == CellDisplay.ZERO)
-			return;
-		
-		g.setColor(theme.getNumberColor(Integer.parseInt(this.display.getSymbol())));
-		
-		switch (this.display) {
-			case ONE   -> this.drawNumberOne(g, p);
-			case TWO   -> this.drawNumberTwo(g, p);
-			case THREE -> this.drawNumberThree(g, p);
-			case FOUR  -> this.drawNumberFour(g, p);
-			case FIVE  -> this.drawNumberFive(g, p);
-			case SIX   -> this.drawNumberSix(g, p);
-			case SEVEN -> this.drawNumberSeven(g, p);
-			case EIGHT -> this.drawNumberEight(g, p);
-		}
-	}
-	
-	/**
-	 * Draws the mine.
-	 * @param g The {@link Graphics2D} object used for drawing.
-	 * @param p The pixel size of the cell.
-	 */
-	protected void drawMine(@NotNull Graphics2D g, int p, @NotNull Theme theme) {
-		g.setColor(theme.mine());
-		g.fillRect(this.getX() + 6 * p, this.getY() + 4 * p, 5 * p, 9 * p);	// vertical rect
-		g.fillRect(this.getX() + 4 * p, this.getY() + 6 * p, 9 * p, 5 * p);	// horizontal rect
-		g.fillRect(this.getX() + 5 * p, this.getY() + 5 * p, 7 * p, 7 * p);	// centered square
-		g.fillRect(this.getX() + 8 * p, this.getY() + 2 * p, p, 13 * p);			// vertical middle line
-		g.fillRect(this.getX() + 2 * p, this.getY() + 8 * p, 13 * p, p);			// horizontal middle line
-		g.fillRect(this.getX() + 4 * p, this.getY() + 4 * p, p, p);						// top-left dot
-		g.fillRect(this.getX() + 12 * p, this.getY() + 4 * p, p, p);						// top-right dot
-		g.fillRect(this.getX() + 4 * p, this.getY() + 12 * p, p, p);						// bottom-left dot
-		g.fillRect(this.getX() + 12 * p, this.getY() + 12 * p, p, p);						// bottom-right dot
-		
-		g.setColor(theme.mineShade());
-		g.fillRect(this.getX() + 6 * p, this.getY() + 6 * p, 2 * p, 2 * p);	// light dot
-	}
-	
-	/**
-	 * Draws the number 1.
-	 * @param g The {@link Graphics2D} object used for drawing.
-	 * @param p The pixel size of the cell.
-	 */
-	protected void drawNumberOne(@NotNull Graphics2D g, int p) {
-		g.fillRect(this.getX() + 8 * p, this.getY() + 3 * p, 2 * p, 8 * p); 	// Right column
-		g.fillRect(this.getX() + 7 * p, this.getY() + 4 * p, p, 7 * p);				// Left column
-		g.fillRect(this.getX() + 6 * p, this.getY() + 5 * p, p, p);						// Top appendix
-		g.fillRect(this.getX() + 5 * p, this.getY() + 6 * p, 2 * p, p);				// Bottom appendix
-		g.fillRect(this.getX() + 5 * p, this.getY() + 11 * p, 7 * p, 2 * p);	// Bottom row
-	}
-	
-	/**
-	 * Draws the number 2.
-	 * @param g The {@link Graphics2D} object used for drawing.
-	 * @param p The pixel size of the cell.
-	 */
-	protected void drawNumberTwo(@NotNull Graphics2D g, int p) {
-		g.fillRect(this.getX() + 3 * p, this.getY() + 4 * p, 3 * p, 2 * p);	// top-left appendix
-		g.fillRect(this.getX() + 4 * p, this.getY() + 3 * p, 8 * p, 2 * p);	// top row
-		g.fillRect(this.getX() + 10 * p, this.getY() + 4 * p, 3 * p, 3 * p);	// right square
-		g.fillRect(this.getX() + 8 * p, this.getY() + 7 * p, 4 * p, p);				// first middle row
-		g.fillRect(this.getX() + 6 * p, this.getY() + 8 * p, 5 * p, p);				// second middle row
-		g.fillRect(this.getX() + 4 * p, this.getY() + 9 * p, 5 * p, p);				// third middle row
-		g.fillRect(this.getX() + 3 * p, this.getY() + 10 * p, 4 * p, 3 * p);	// bottom-left corner
-		g.fillRect(this.getX() + 7 * p, this.getY() + 11 * p, 6 * p, 2 * p);	// bottom row
-	}
-	
-	/**
-	 * Draws the number 3.
-	 * @param g The {@link Graphics2D} object used for drawing.
-	 * @param p The pixel size of the cell.
-	 */
-	protected void drawNumberThree(@NotNull Graphics2D g, int p) {
-		g.fillRect(this.getX() + 3 * p, this.getY() + 3 * p, 9 * p, 2 * p);	// top row
-		g.fillRect(this.getX() + 6 * p, this.getY() + 7 * p, 6 * p, 2 * p);	// middle row
-		g.fillRect(this.getX() + 3 * p, this.getY() + 11 * p, 9 * p, 2 * p);	// bottom row
-		g.fillRect(this.getX() + 10 * p, this.getY() + 4 * p, 3 * p, 3 * p);	// top column
-		g.fillRect(this.getX() + 10 * p, this.getY() + 9 * p, 3 * p, 3 * p);	// bottom column
-	}
-	
-	/**
-	 * Draws the number 4.
-	 * @param g The {@link Graphics2D} object used for drawing.
-	 * @param p The pixel size of the cell.
-	 */
-	protected void drawNumberFour(@NotNull Graphics2D g, int p) {
-		g.fillRect(this.getX() + 5 * p, this.getY() + 3 * p, 3 * p, 2 * p);	// top diagonal
-		g.fillRect(this.getX() + 4 * p, this.getY() + 5 * p, 3 * p, 2 * p);	// bottom diagonal
-		g.fillRect(this.getX() + 3 * p, this.getY() + 7 * p, 10 * p, 2 * p);	// horizontal line
-		g.fillRect(this.getX() + 9 * p, this.getY() + 3 * p, 3 * p, 10 * p);	// vertical line
-	}
-	
-	/**
-	 * Draws the number 5.
-	 * @param g The {@link Graphics2D} object used for drawing.
-	 * @param p The pixel size of the cell.
-	 */
-	protected void drawNumberFive(@NotNull Graphics2D g, int p) {
-		g.fillRect(this.getX() + 3 * p, this.getY() + 3 * p, 10 * p, 2 * p);	// top row
-		g.fillRect(this.getX() + 3 * p, this.getY() + 5 * p, 3 * p, 2 * p);	// left column
-		g.fillRect(this.getX() + 3 * p, this.getY() + 7 * p, 9 * p, 2 * p);	// middle row
-		g.fillRect(this.getX() + 10 * p, this.getY() + 8 * p, 3 * p, 4 * p);	// right column
-		g.fillRect(this.getX() + 3 * p, this.getY() + 11 * p, 9 * p, 2 * p);	// bottom row
-	}
-	
-	/**
-	 * Draws the number 6.
-	 * @param g The {@link Graphics2D} object used for drawing.
-	 * @param p The pixel size of the cell.
-	 */
-	protected void drawNumberSix(@NotNull Graphics2D g, int p) {
-		g.fillRect(this.getX() + 4 * p, this.getY() + 3 * p, 8 * p, 2 * p);	// top row
-		g.fillRect(this.getX() + 3 * p, this.getY() + 4 * p, 3 * p, 8 * p);	// left column
-		g.fillRect(this.getX() + 6 * p, this.getY() + 7 * p, 6 * p, 2 * p);	// middle row
-		g.fillRect(this.getX() + 4 * p, this.getY() + 11 * p, 8 * p, 2 * p);	// bottom row
-		g.fillRect(this.getX() + 10 * p, this.getY() + 8 * p, 3 * p, 4 * p);	// right column
-	}
-	
-	/**
-	 * Draws the number 7.
-	 * @param g The {@link Graphics2D} object used for drawing.
-	 * @param p The pixel size of the cell.
-	 */
-	protected void drawNumberSeven(@NotNull Graphics2D g, int p) {
-		g.fillRect(this.getX() + 3 * p, this.getY() + 3 * p, 10 * p, 2 * p);	// row
-		g.fillRect(this.getX() + 10 * p, this.getY() + 5 * p, 3 * p, 2 * p);	// first diagonal
-		g.fillRect(this.getX() + 9 * p, this.getY() + 7 * p, 3 * p, 2 * p);	// second diagonal
-		g.fillRect(this.getX() + 8 * p, this.getY() + 9 * p, 3 * p, 2 * p);	// third diagonal
-		g.fillRect(this.getX() + 7 * p, this.getY() + 11 * p, 3 * p, 2 * p);	// fourth diagonal
-	}
-	
-	/**
-	 * Draws the number 8.
-	 * @param g The {@link Graphics2D} object used for drawing.
-	 * @param p The pixel size of the cell.
-	 */
-	protected void drawNumberEight(@NotNull Graphics2D g, int p) {
-		g.fillRect(this.getX() + 4 * p, this.getY() + 3 * p, 8 * p, 2 * p);	// top row
-		g.fillRect(this.getX() + 4 * p, this.getY() + 7 * p, 8 * p, 2 * p);	// middle row
-		g.fillRect(this.getX() + 4 * p, this.getY() + 11 * p, 8 * p, 2 * p);	// bottom row
-		g.fillRect(this.getX() + 3 * p, this.getY() + 4 * p, 3 * p, 3 * p);	// top-left column
-		g.fillRect(this.getX() + 10 * p, this.getY() + 4 * p, 3 * p, 3 * p);	// top-right column
-		g.fillRect(this.getX() + 3 * p, this.getY() + 9 * p, 3 * p, 3 * p);	// bottom-left column
-		g.fillRect(this.getX() + 10 * p, this.getY() + 9 * p, 3 * p, 3 * p);	// bottom-right column
 	}
 	
 	/* ---------- #Draw(Graphics) UTILITIES ---------- */

@@ -4,6 +4,7 @@ import com.kissene3.main.Main;
 
 import java.io.File;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.logging.*;
 
@@ -11,7 +12,7 @@ import java.util.logging.*;
 public class AppLogger {
 	private static final Logger LOGGER = Logger.getLogger(AppLogger.class.getName());
 	
-	public static void init() {
+	static {
 		try {
 			FileHandler fh = new FileHandler(Main.BASE_PATH + "logs" + File.separator + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss")) + ".txt", true);
 			
@@ -21,7 +22,8 @@ public class AppLogger {
 				@Override
 				public String format(LogRecord record) {
 					return String.format("[%s] [%s] %s%n",
-							LocalDateTime.now().format(formatter),
+							record.getInstant().atZone(ZoneId.systemDefault()).format(formatter),
+							//LocalDateTime.now().format(formatter),
 							record.getLevel(),
 							record.getMessage());
 				}

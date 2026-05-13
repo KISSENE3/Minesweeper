@@ -2,7 +2,7 @@ package com.kissene3.gui.screens;
 
 import com.kissene3.game.Difficulty;
 import com.kissene3.game.Grid;
-import com.kissene3.gui.MyUtilities.Coordinates;
+import com.kissene3.gui.utilities.MyUtilities.Coordinates;
 import com.kissene3.gui.io.AppLogger;
 import org.jetbrains.annotations.NotNull;
 

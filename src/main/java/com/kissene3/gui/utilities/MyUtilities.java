@@ -1,4 +1,4 @@
-package com.kissene3.gui;
+package com.kissene3.gui.utilities;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;

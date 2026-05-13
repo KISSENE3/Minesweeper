@@ -5,10 +5,14 @@ import com.kissene3.gui.components.*;
 import com.kissene3.gui.io.AppLogger;
 import com.kissene3.gui.io.SettingsRegistry;
 import com.kissene3.gui.io.ThemeRegistry;
+import com.kissene3.gui.utilities.MyUtilities.Coordinates;
+import com.kissene3.gui.utilities.MyUtilities.Dimension;
+import com.kissene3.gui.utilities.Textures;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -29,14 +33,124 @@ public class MenuScreen extends Screen {
 			{'M', ' ', 'M', ' ', 'M', ' ', ' ', ' ', 'M', ' ', ' ', 'M', ' ', ' ', 'M', ' '},
 			{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'M', 'M', 'M', ' ', ' ', ' ', ' ', 'M'}
 	};
+	private static final int cellSize = 64;
+	private final Textures textures;
 	
 	public MenuScreen(@NotNull ScreenManager manager) {
 		super(manager);
 		this.init();
+		int pCell = cellSize / 16;
+		int pTitle = 8;
+		this.textures = new Textures() {
+			@Override
+			protected @NotNull Dimension getAssetDimension(@NotNull Key key) {
+				return switch (key) {
+					case BACKGROUND, EXPLODED, CLOSED, REVEALED, MINE, FLAG, CROSS,
+						 ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT ->  new Dimension(cellSize, cellSize);
+					case TITLE -> new Dimension(121 * pTitle, 16 * pTitle);
+					default -> throw new UnsupportedOperationException("This should never happen.");
+				};
+			}
+			
+			@Override
+			protected void drawMapping(@NotNull Graphics2D g, @NotNull Key key, @NotNull Dimension dimension) {
+				switch (key) {
+					case BACKGROUND -> this.drawBackground(
+							g,
+							new Coordinates(0, 0),
+							this.getAssetDimension(Key.BACKGROUND),
+							MenuScreen.this.manager.getSettings().getTheme().background()
+					);
+					case EXPLODED -> this.drawBackground(
+							g,
+							new Coordinates(0, 0),
+							this.getAssetDimension(Key.EXPLODED),
+							MenuScreen.this.manager.getSettings().getTheme().backgroundExplodedMine()
+					);
+					case CLOSED -> this.drawClosed(
+							g, pCell,
+							new Coordinates(0, 0),
+							this.getAssetDimension(Key.CLOSED),
+							MenuScreen.this.manager.getSettings().getTheme().backgroundLighterShade(),
+							MenuScreen.this.manager.getSettings().getTheme().backgroundDarkerShade()
+					);
+					case REVEALED -> this.drawRevealed(
+							g, pCell,
+							new Coordinates(0, 0),
+							this.getAssetDimension(Key.REVEALED),
+							MenuScreen.this.manager.getSettings().getTheme().border()
+					);
+					case MINE -> this.drawMine(
+							g, pCell,
+							new Coordinates(0, 0),
+							MenuScreen.this.manager.getSettings().getTheme().mine(),
+							MenuScreen.this.manager.getSettings().getTheme().mineShade()
+					);
+					case FLAG -> this.drawFlag(
+							g, pCell,
+							new Coordinates(0, 0),
+							MenuScreen.this.manager.getSettings().getTheme().flag(),
+							MenuScreen.this.manager.getSettings().getTheme().flagBase()
+					);
+					case CROSS -> this.drawCross(
+							g, pCell,
+							new Coordinates(0, 0),
+							this.getAssetDimension(Key.CROSS),
+							MenuScreen.this.manager.getSettings().getTheme().cross()
+					);
+					case ONE -> this.drawNumberOne(
+							g, pCell,
+							new Coordinates(0, 0),
+							MenuScreen.this.manager.getSettings().getTheme().numberOne()
+					);
+					case TWO -> this.drawNumberTwo(
+							g, pCell,
+							new Coordinates(0, 0),
+							MenuScreen.this.manager.getSettings().getTheme().numberTwo()
+					);
+					case THREE -> this.drawNumberThree(
+							g, pCell,
+							new Coordinates(0, 0),
+							MenuScreen.this.manager.getSettings().getTheme().numberThree()
+					);
+					case FOUR -> this.drawNumberFour(
+							g, pCell,
+							new Coordinates(0, 0),
+							MenuScreen.this.manager.getSettings().getTheme().numberFour()
+					);
+					case FIVE -> this.drawNumberFive(
+							g, pCell,
+							new Coordinates(0, 0),
+							MenuScreen.this.manager.getSettings().getTheme().numberFive()
+					);
+					case SIX -> this.drawNumberSix(
+							g, pCell,
+							new Coordinates(0, 0),
+							MenuScreen.this.manager.getSettings().getTheme().numberSix()
+					);
+					case SEVEN -> this.drawNumberSeven(
+							g, pCell,
+							new Coordinates(0, 0),
+							MenuScreen.this.manager.getSettings().getTheme().numberSeven()
+					);
+					case EIGHT -> this.drawNumberEight(
+							g, pCell,
+							new Coordinates(0, 0),
+							MenuScreen.this.manager.getSettings().getTheme().numberEight()
+					);
+					case TITLE -> this.drawTitle(
+							g, pTitle,
+							new Coordinates(0, 0),
+							MenuScreen.this.manager.getSettings().getTheme().title(),
+							MenuScreen.this.manager.getSettings().getTheme().titleOutline()
+					);
+					default -> throw new UnsupportedOperationException("This should never happen.");
+				}
+			}
+		};
 	}
 	
 	private void init() {
-		
 		this.componentsManager.addComponent(this.getMinesweeperButton((this.getWidth() - 192) / 2, this.getHeight() - 96, "QUIT",
 			(e) -> {
 				if (e.getButton() != MouseEvent.BUTTON1)
@@ -120,7 +234,7 @@ public class MenuScreen extends Screen {
 		
 		for (int y = 0; y < backgroundLayout.length; y++)
 			for (int x = 0; x < backgroundLayout[y].length; x++)
-				MenuCell.draw(g, x, y, backgroundLayout[y][x], this.manager.getSettings().getTheme());
+				this.drawCell(g, backgroundLayout[y][x], x * cellSize, y * cellSize);
 		
 		g.setColor(new Color(
 				this.manager.getSettings().getTheme().background().getRed(),
@@ -137,195 +251,47 @@ public class MenuScreen extends Screen {
 		this.componentsManager.draw(g);
 	}
 	
+	private void drawCell(@NotNull Graphics2D g, char c, int x, int y) {
+		if (c == 'B') {
+			g.drawImage(this.getTexture(Textures.Key.EXPLODED), x, y, null);
+		} else {
+			g.drawImage(this.getTexture(Textures.Key.BACKGROUND), x, y, null);
+		}
+		
+		switch (c) {
+			case '0', '1', '2', '3', '4', '5', '6', '7', '8', 'M', 'B' ->
+				g.drawImage(this.getTexture(Textures.Key.REVEALED), x, y, null);
+			default ->
+				g.drawImage(this.getTexture(Textures.Key.CLOSED), x, y, null);
+		}
+		
+		switch (c) {
+			case '1' -> g.drawImage(this.getTexture(Textures.Key.ONE), x, y, null);
+			case '2' -> g.drawImage(this.getTexture(Textures.Key.TWO), x, y, null);
+			case '3' -> g.drawImage(this.getTexture(Textures.Key.THREE), x, y, null);
+			case '4' -> g.drawImage(this.getTexture(Textures.Key.FOUR), x, y, null);
+			case '5' -> g.drawImage(this.getTexture(Textures.Key.FIVE), x, y, null);
+			case '6' -> g.drawImage(this.getTexture(Textures.Key.SIX), x, y, null);
+			case '7' -> g.drawImage(this.getTexture(Textures.Key.SEVEN), x, y, null);
+			case '8' -> g.drawImage(this.getTexture(Textures.Key.EIGHT), x, y, null);
+			case 'M', 'B' ->
+				g.drawImage(this.getTexture(Textures.Key.MINE), x, y, null);
+			case 'F', 'X'->
+				g.drawImage(this.getTexture(Textures.Key.FLAG), x, y, null);
+		}
+		
+		if (c == 'X') {
+			g.drawImage(this.getTexture(Textures.Key.CROSS), x, y, null);
+		}
+	}
+	
+	private BufferedImage getTexture(Textures.Key key) {
+		return this.textures.getAsset(key);
+	}
+	
 	@Override
 	public void onTick() {
 		this.componentsManager.onTick();
-	}
-}
-
-class MenuCell {
-
-	private MenuCell() {}
-	
-	public static void draw(@NotNull Graphics2D g, int x, int y, char drawing, Theme theme) {
-		final int SIZE = 64;
-		int p = SIZE / 16;
-		x *= SIZE;
-		y *= SIZE;
-		
-		if (Character.isDigit(drawing) || drawing == 'M') {
-			drawCellBackground(g, x, y, SIZE, theme.background());
-			drawCellBorder(g, p, x, y, SIZE, theme.border());
-		}
-		
-		switch (drawing) {
-			case '0' -> {}
-			case '1' -> drawNumberOne(g, p, x, y, theme);
-			case '2' -> drawNumberTwo(g, p, x, y, theme);
-			case '3' -> drawNumberThree(g, p, x, y, theme);
-			case '4' -> drawNumberFour(g, p, x, y, theme);
-			case '5' -> drawNumberFive(g, p, x, y, theme);
-			case '6' -> drawNumberSix(g, p, x, y, theme);
-			case '7' -> drawNumberSeven(g, p, x, y, theme);
-			case '8' -> drawNumberEight(g, p, x, y, theme);
-			case 'F' -> drawFlag(g, p, x, y, SIZE, false, theme);
-			case 'X' -> drawFlag(g, p, x, y, SIZE, true, theme);
-			case 'M' -> drawMine(g, p, x, y, theme);
-			case 'B' -> {
-				drawCellBackground(g, x, y, SIZE, theme.backgroundExplodedMine());
-				drawCellBorder(g, p, x, y, SIZE, theme.border());
-				drawMine(g, p, x, y, theme);
-			}
-			default -> drawCellShades(g, p, x, y, SIZE, theme);
-		}
-	}
-	
-	private static void drawCellBackground(@NotNull Graphics2D g, int x, int y, int size, @NotNull Color color) {
-		g.setColor(color);
-		g.fillRect(x, y, size, size);
-	}
-	
-	private static void drawCellShades(@NotNull Graphics2D g, int p, int x, int y, int size, @NotNull Theme theme) {
-		drawCellBackground(g, x, y, size, theme.background());
-		
-		int p2 = 2 * p;
-		int reducedSize = size - p;
-		int reducedSize2 = size - p2;
-		
-		g.setColor(theme.backgroundLighterShade());
-		g.fillRect(x, y, reducedSize, p);								// top top-line
-		g.fillRect(x, y, reducedSize2, p2);								// bottom top-line
-		g.fillRect(x, y, p, reducedSize);								// left left-line
-		g.fillRect(x, y, p2, reducedSize2);								// right left-line
-		
-		g.setColor(theme.backgroundDarkerShade());
-		g.fillRect(x + reducedSize, y + p, p, reducedSize);		// right right-line
-		g.fillRect(x + reducedSize2, y + p2, p, reducedSize2);	// left right-line
-		g.fillRect(x + p, y + reducedSize, reducedSize, p);		// bottom bottom-line
-		g.fillRect(x + p2, y + reducedSize2, reducedSize2, p);	// top bottom-line
-	}
-	
-	@SuppressWarnings("SameParameterValue")
-	private static void drawFlag(@NotNull Graphics2D g, int p, int x, int y, int size, boolean isCrossed, @NotNull Theme theme) {
-		drawCellShades(g, p, x, y, size, theme);
-		
-		g.setColor(theme.flag());
-		g.fillRect(x + 7 * p, y + 3 * p, 2 * p, 5 * p);	// right column
-		g.fillRect(x + 5 * p, y + 4 * p, 2 * p, 3 * p);	// middle column
-		g.fillRect(x + 4 * p, y + 5 * p, p, p);						// left dot
-		
-		g.setColor(theme.flagBase());
-		g.fillRect(x + 8 * p, y + 8 * p, p, 2 * p);				// vertical pole
-		g.fillRect(x + 6 * p, y + 10 * p, 4 * p, p);			// top row
-		g.fillRect(x + 4 * p, y + 11 * p, 8 * p, 2 * p);	// bottom row
-		
-		if (isCrossed)
-			drawCross(g, p, x, y, size, theme.cross());
-	}
-	
-	private static void drawCross(@NotNull Graphics2D g, int p, int x, int y, int size, @NotNull Color color) {
-		g.setStroke(new BasicStroke(p));
-		g.setColor(color);
-		g.drawLine(x + p, y + p, x + size - p, y + size - p);	// top-left to bottom-right
-		g.drawLine(x + size - p, y + p, x + p, y + size - p);	// top-right to bottom-left
-		g.setStroke(new BasicStroke(1));
-	}
-	
-	@SuppressWarnings("SameParameterValue")
-	private static void drawCellBorder(@NotNull Graphics2D g, int p, int x, int y, int size, @NotNull Color color) {
-		g.setColor(color);
-		g.fillRect(x, y, size, p);	// top line
-		g.fillRect(x, y, p, size);	// left line
-	}
-	
-	private static void drawMine(@NotNull Graphics2D g, int p, int x, int y, @NotNull Theme theme) {
-		g.setColor(theme.mine());
-		g.fillRect(x + 6 * p, y + 4 * p, 5 * p, 9 * p);	// vertical rect
-		g.fillRect(x + 4 * p, y + 6 * p, 9 * p, 5 * p);	// horizontal rect
-		g.fillRect(x + 5 * p, y + 5 * p, 7 * p, 7 * p);	// centered square
-		g.fillRect(x + 8 * p, y + 2 * p, p, 13 * p);			// vertical middle line
-		g.fillRect(x + 2 * p, y + 8 * p, 13 * p, p);			// horizontal middle line
-		g.fillRect(x + 4 * p, y + 4 * p, p, p);						// top-left dot
-		g.fillRect(x + 12 * p, y + 4 * p, p, p);						// top-right dot
-		g.fillRect(x + 4 * p, y + 12 * p, p, p);						// bottom-left dot
-		g.fillRect(x + 12 * p, y + 12 * p, p, p);						// bottom-right dot
-		
-		g.setColor(theme.mineShade());
-		g.fillRect(x + 6 * p, y + 6 * p, 2 * p, 2 * p);	// light dot
-	}
-	
-	private static void drawNumberOne(@NotNull Graphics2D g, int p, int x, int y, @NotNull Theme theme) {
-		g.setColor(theme.numberOne());
-		g.fillRect(x + 8 * p, y + 3 * p, 2 * p, 8 * p); 	// Right column
-		g.fillRect(x + 7 * p, y + 4 * p, p, 7 * p);				// Left column
-		g.fillRect(x + 6 * p, y + 5 * p, p, p);						// Top appendix
-		g.fillRect(x + 5 * p, y + 6 * p, 2 * p, p);				// Bottom appendix
-		g.fillRect(x + 5 * p, y + 11 * p, 7 * p, 2 * p);	// Bottom row
-	}
-	
-	private static void drawNumberTwo(@NotNull Graphics2D g, int p, int x, int y, @NotNull Theme theme) {
-		g.setColor(theme.numberTwo());
-		g.fillRect(x + 3 * p, y + 4 * p, 3 * p, 2 * p);	// top-left appendix
-		g.fillRect(x + 4 * p, y + 3 * p, 8 * p, 2 * p);	// top row
-		g.fillRect(x + 10 * p, y + 4 * p, 3 * p, 3 * p);	// right square
-		g.fillRect(x + 8 * p, y + 7 * p, 4 * p, p);				// first middle row
-		g.fillRect(x + 6 * p, y + 8 * p, 5 * p, p);				// second middle row
-		g.fillRect(x + 4 * p, y + 9 * p, 5 * p, p);				// third middle row
-		g.fillRect(x + 3 * p, y + 10 * p, 4 * p, 3 * p);	// bottom-left corner
-		g.fillRect(x + 7 * p, y + 11 * p, 6 * p, 2 * p);	// bottom row
-	}
-	private static void drawNumberThree(@NotNull Graphics2D g, int p, int x, int y, @NotNull Theme theme) {
-		g.setColor(theme.numberThree());
-		g.fillRect(x + 3 * p, y + 3 * p, 9 * p, 2 * p);	// top row
-		g.fillRect(x + 6 * p, y + 7 * p, 6 * p, 2 * p);	// middle row
-		g.fillRect(x + 3 * p, y + 11 * p, 9 * p, 2 * p);	// bottom row
-		g.fillRect(x + 10 * p, y + 4 * p, 3 * p, 3 * p);	// top column
-		g.fillRect(x + 10 * p, y + 9 * p, 3 * p, 3 * p);	// bottom column
-	}
-	private static void drawNumberFour(@NotNull Graphics2D g, int p, int x, int y, @NotNull Theme theme) {
-		g.setColor(theme.numberFour());
-		g.fillRect(x + 5 * p, y + 3 * p, 3 * p, 2 * p);	// top diagonal
-		g.fillRect(x + 4 * p, y + 5 * p, 3 * p, 2 * p);	// bottom diagonal
-		g.fillRect(x + 3 * p, y + 7 * p, 10 * p, 2 * p);	// horizontal line
-		g.fillRect(x + 9 * p, y + 3 * p, 3 * p, 10 * p);	// vertical line
-	}
-	
-	private static void drawNumberFive(@NotNull Graphics2D g, int p, int x, int y, @NotNull Theme theme) {
-		g.setColor(theme.numberFive());
-		g.fillRect(x + 3 * p, y + 3 * p, 10 * p, 2 * p);	// top row
-		g.fillRect(x + 3 * p, y + 5 * p, 3 * p, 2 * p);	// left column
-		g.fillRect(x + 3 * p, y + 7 * p, 9 * p, 2 * p);	// middle row
-		g.fillRect(x + 10 * p, y + 8 * p, 3 * p, 4 * p);	// right column
-		g.fillRect(x + 3 * p, y + 11 * p, 9 * p, 2 * p);	// bottom row
-	}
-	
-	private static void drawNumberSix(@NotNull Graphics2D g, int p, int x, int y, @NotNull Theme theme) {
-		g.setColor(theme.numberSix());
-		g.fillRect(x + 4 * p, y + 3 * p, 8 * p, 2 * p);	// top row
-		g.fillRect(x + 3 * p, y + 4 * p, 3 * p, 8 * p);	// left column
-		g.fillRect(x + 6 * p, y + 7 * p, 6 * p, 2 * p);	// middle row
-		g.fillRect(x + 4 * p, y + 11 * p, 8 * p, 2 * p);	// bottom row
-		g.fillRect(x + 10 * p, y + 8 * p, 3 * p, 4 * p);	// right column
-	}
-	
-	private static void drawNumberSeven(@NotNull Graphics2D g, int p, int x, int y, @NotNull Theme theme) {
-		g.setColor(theme.numberSeven());
-		g.fillRect(x + 3 * p, y + 3 * p, 10 * p, 2 * p);	// row
-		g.fillRect(x + 10 * p, y + 5 * p, 3 * p, 2 * p);	// first diagonal
-		g.fillRect(x + 9 * p, y + 7 * p, 3 * p, 2 * p);	// second diagonal
-		g.fillRect(x + 8 * p, y + 9 * p, 3 * p, 2 * p);	// third diagonal
-		g.fillRect(x + 7 * p, y + 11 * p, 3 * p, 2 * p);	// fourth diagonal
-	}
-	
-	private static void drawNumberEight(@NotNull Graphics2D g, int p, int x, int y, @NotNull Theme theme) {
-		g.setColor(theme.numberEight());
-		g.fillRect(x + 4 * p, y + 3 * p, 8 * p, 2 * p);	// top row
-		g.fillRect(x + 4 * p, y + 7 * p, 8 * p, 2 * p);	// middle row
-		g.fillRect(x + 4 * p, y + 11 * p, 8 * p, 2 * p);	// bottom row
-		g.fillRect(x + 3 * p, y + 4 * p, 3 * p, 3 * p);	// top-left column
-		g.fillRect(x + 10 * p, y + 4 * p, 3 * p, 3 * p);	// top-right column
-		g.fillRect(x + 3 * p, y + 9 * p, 3 * p, 3 * p);	// bottom-left column
-		g.fillRect(x + 10 * p, y + 9 * p, 3 * p, 3 * p);	// bottom-right column
 	}
 }
 

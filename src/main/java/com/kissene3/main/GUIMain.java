@@ -16,10 +16,7 @@ public class GUIMain {
 	public Settings settings;
 	
 	public GUIMain() {
-		AppLogger.init();
 		AppLogger.info("Booting...");
-		DifficultyRegistry.init();
-		ThemeRegistry.init();
 		this.settings = SettingsRegistry.load();
 		this.start();
 	}

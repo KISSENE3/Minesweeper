@@ -49,11 +49,15 @@ public class ThemeRegistry {
 	private static final String INTERNAL_DIR = "/themes/";
 	private static final String[] DEFAULTS = {"light", "dark"};
 	
+	static {
+		init();
+	}
+	
 	/**
 	 * Scans every file and populate the {@code Map}.
 	 * To be called at the start of the application.
 	 */
-	public static void init() {
+	private static void init() {
 		CACHE.clear();
 		
 		// 1. Loads the defaults from Resources.

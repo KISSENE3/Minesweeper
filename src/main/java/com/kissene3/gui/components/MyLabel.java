@@ -1,8 +1,8 @@
 package com.kissene3.gui.components;
 
-import com.kissene3.gui.MyUtilities.Coordinates;
-import com.kissene3.gui.MyUtilities.Dimension;
-import com.kissene3.gui.MyUtilities.Rectangle;
+import com.kissene3.gui.utilities.MyUtilities.Coordinates;
+import com.kissene3.gui.utilities.MyUtilities.Dimension;
+import com.kissene3.gui.utilities.MyUtilities.Rectangle;
 import com.kissene3.gui.interfaces.Clickable;
 import com.kissene3.gui.interfaces.Drawable;
 import org.jetbrains.annotations.NotNull;

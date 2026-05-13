@@ -2,8 +2,8 @@ package com.kissene3.game;
 
 import com.kissene3.console.*;
 import com.kissene3.gui.*;
-import com.kissene3.gui.MyUtilities.*;
-import com.kissene3.gui.MyUtilities.Dimension;
+import com.kissene3.gui.utilities.MyUtilities.*;
+import com.kissene3.gui.utilities.MyUtilities.Dimension;
 import com.kissene3.gui.components.*;
 import com.kissene3.gui.interfaces.Scrollable;
 import org.jetbrains.annotations.NotNull;

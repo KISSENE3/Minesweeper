@@ -1,6 +1,6 @@
 package com.kissene3.gui.components;
 
-import com.kissene3.gui.MyUtilities.*;
+import com.kissene3.gui.utilities.MyUtilities.*;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
