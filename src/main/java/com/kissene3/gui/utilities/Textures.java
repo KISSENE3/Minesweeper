@@ -1,6 +1,5 @@
 package com.kissene3.gui.utilities;
 
-import com.kissene3.gui.Theme;
 import com.kissene3.gui.io.AppLogger;
 import com.kissene3.gui.utilities.MyUtilities.Coordinates;
 import com.kissene3.gui.utilities.MyUtilities.Dimension;
@@ -12,6 +11,7 @@ import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
 
+@SuppressWarnings("unused")
 public abstract class Textures {
 	
 	public enum Key {
@@ -59,29 +59,6 @@ public abstract class Textures {
 		Graphics2D g = img.createGraphics();
 		
 		drawMapping(g, key, d);
-		
-//		int size = settings.getCellSize().getSize();
-//		int p = size / 16;
-//
-//		Coordinates topLeft = new Coordinates(0, 0);
-//
-//		switch (key.toUpperCase()) {
-//			case "B" -> drawBackground(g, topLeft, dimension, settings.getTheme());
-//			case "E" -> drawExploded(g, topLeft, dimension, settings.getTheme());
-//			case "S" -> drawClosed(g, p, topLeft, dimension, settings.getTheme());
-//			case "R" -> drawRevealed(g, p, topLeft, dimension, settings.getTheme().border());
-//			case "M" -> drawMine(g, p, topLeft, settings.getTheme());
-//			case "1" -> drawNumberOne(g, p, topLeft, settings.getTheme().numberOne());
-//			case "2" -> drawNumberTwo(g, p, topLeft, settings.getTheme().numberTwo());
-//			case "3" -> drawNumberThree(g, p, topLeft, settings.getTheme().numberThree());
-//			case "4" -> drawNumberFour(g, p, topLeft, settings.getTheme().numberFour());
-//			case "5" -> drawNumberFive(g, p, topLeft, settings.getTheme().numberFive());
-//			case "6" -> drawNumberSix(g, p, topLeft, settings.getTheme().numberSix());
-//			case "7" -> drawNumberSeven(g, p, topLeft, settings.getTheme().numberSeven());
-//			case "8" -> drawNumberEight(g, p, topLeft, settings.getTheme().numberEight());
-//			case "F" -> drawFlag(g, p, topLeft, settings.getTheme());
-//			case "C" -> drawCross(g, p, topLeft, dimension, settings.getTheme());
-//		}
 		
 		g.dispose();
 		return img;

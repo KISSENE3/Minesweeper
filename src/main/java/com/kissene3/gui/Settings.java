@@ -4,7 +4,6 @@ import com.google.gson.annotations.SerializedName;
 import com.kissene3.game.*;
 import com.kissene3.gui.io.ThemeRegistry;
 import com.kissene3.gui.utilities.TextureManager;
-import com.kissene3.gui.utilities.Textures;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

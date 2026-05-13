@@ -1,10 +1,8 @@
 package com.kissene3.main;
 
-import com.kissene3.game.DifficultyRegistry;
 import com.kissene3.gui.*;
 import com.kissene3.gui.io.AppLogger;
 import com.kissene3.gui.io.SettingsRegistry;
-import com.kissene3.gui.io.ThemeRegistry;
 import com.kissene3.gui.screens.*;
 
 import java.awt.*;

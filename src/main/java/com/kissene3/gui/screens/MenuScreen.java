@@ -7,6 +7,7 @@ import com.kissene3.gui.io.SettingsRegistry;
 import com.kissene3.gui.io.ThemeRegistry;
 import com.kissene3.gui.utilities.MyUtilities.Coordinates;
 import com.kissene3.gui.utilities.MyUtilities.Dimension;
+import com.kissene3.gui.utilities.TextureManager;
 import com.kissene3.gui.utilities.Textures;
 import org.jetbrains.annotations.NotNull;
 
@@ -148,6 +149,7 @@ public class MenuScreen extends Screen {
 				}
 			}
 		};
+		TextureManager.addPack(this.textures);
 	}
 	
 	private void init() {

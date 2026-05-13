@@ -3,9 +3,9 @@ package com.kissene3.game;
 import com.kissene3.console.*;
 import com.kissene3.gui.*;
 import com.kissene3.gui.components.*;
-import com.kissene3.gui.screens.MenuScreen;
-import com.kissene3.gui.utilities.MyUtilities;
+import com.kissene3.gui.utilities.MyUtilities.Coordinates;
 import com.kissene3.gui.utilities.MyUtilities.Dimension;
+import com.kissene3.gui.utilities.TextureManager;
 import com.kissene3.gui.utilities.Textures;
 import org.jetbrains.annotations.NotNull;
 
@@ -72,7 +72,7 @@ public class Cell extends MyAbstractButton {
 		this.init();
 		this.textures = new Textures() {
 			@Override
-			protected MyUtilities.@NotNull Dimension getAssetDimension(@NotNull Key key) {
+			protected @NotNull Dimension getAssetDimension(@NotNull Key key) {
 				return switch (key) {
 					case BACKGROUND, EXPLODED, CLOSED, REVEALED, MINE, FLAG, CROSS,
 						 ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT ->  new Dimension(
@@ -84,24 +84,24 @@ public class Cell extends MyAbstractButton {
 			}
 			
 			@Override
-			protected void drawMapping(@NotNull Graphics2D g, @NotNull Key key, MyUtilities.@NotNull Dimension dimension) {
+			protected void drawMapping(@NotNull Graphics2D g, @NotNull Key key, @NotNull Dimension dimension) {
 				switch (key) {
 					case BACKGROUND -> this.drawBackground(
 							g,
-							new MyUtilities.Coordinates(0, 0),
+							new Coordinates(0, 0),
 							this.getAssetDimension(Key.BACKGROUND),
 							Cell.this.grid.getSettings().getTheme().background()
 					);
 					case EXPLODED -> this.drawBackground(
 							g,
-							new MyUtilities.Coordinates(0, 0),
+							new Coordinates(0, 0),
 							this.getAssetDimension(Key.EXPLODED),
 							Cell.this.grid.getSettings().getTheme().backgroundExplodedMine()
 					);
 					case CLOSED -> this.drawClosed(
 							g,
 							Cell.this.grid.getSettings().getCellSize().getSize() / 16,
-							new MyUtilities.Coordinates(0, 0),
+							new Coordinates(0, 0),
 							this.getAssetDimension(Key.CLOSED),
 							Cell.this.grid.getSettings().getTheme().backgroundLighterShade(),
 							Cell.this.grid.getSettings().getTheme().backgroundDarkerShade()
@@ -109,83 +109,84 @@ public class Cell extends MyAbstractButton {
 					case REVEALED -> this.drawRevealed(
 							g,
 							Cell.this.grid.getSettings().getCellSize().getSize() / 16,
-							new MyUtilities.Coordinates(0, 0),
+							new Coordinates(0, 0),
 							this.getAssetDimension(Key.REVEALED),
 							Cell.this.grid.getSettings().getTheme().border()
 					);
 					case MINE -> this.drawMine(
 							g,
 							Cell.this.grid.getSettings().getCellSize().getSize() / 16,
-							new MyUtilities.Coordinates(0, 0),
+							new Coordinates(0, 0),
 							Cell.this.grid.getSettings().getTheme().mine(),
 							Cell.this.grid.getSettings().getTheme().mineShade()
 					);
 					case FLAG -> this.drawFlag(
 							g,
 							Cell.this.grid.getSettings().getCellSize().getSize() / 16,
-							new MyUtilities.Coordinates(0, 0),
+							new Coordinates(0, 0),
 							Cell.this.grid.getSettings().getTheme().flag(),
 							Cell.this.grid.getSettings().getTheme().flagBase()
 					);
 					case CROSS -> this.drawCross(
 							g,
 							Cell.this.grid.getSettings().getCellSize().getSize() / 16,
-							new MyUtilities.Coordinates(0, 0),
+							new Coordinates(0, 0),
 							this.getAssetDimension(Key.CROSS),
 							Cell.this.grid.getSettings().getTheme().cross()
 					);
 					case ONE -> this.drawNumberOne(
 							g,
 							Cell.this.grid.getSettings().getCellSize().getSize() / 16,
-							new MyUtilities.Coordinates(0, 0),
+							new Coordinates(0, 0),
 							Cell.this.grid.getSettings().getTheme().numberOne()
 					);
 					case TWO -> this.drawNumberTwo(
 							g,
 							Cell.this.grid.getSettings().getCellSize().getSize() / 16,
-							new MyUtilities.Coordinates(0, 0),
+							new Coordinates(0, 0),
 							Cell.this.grid.getSettings().getTheme().numberTwo()
 					);
 					case THREE -> this.drawNumberThree(
 							g,
 							Cell.this.grid.getSettings().getCellSize().getSize() / 16,
-							new MyUtilities.Coordinates(0, 0),
+							new Coordinates(0, 0),
 							Cell.this.grid.getSettings().getTheme().numberThree()
 					);
 					case FOUR -> this.drawNumberFour(
 							g,
 							Cell.this.grid.getSettings().getCellSize().getSize() / 16,
-							new MyUtilities.Coordinates(0, 0),
+							new Coordinates(0, 0),
 							Cell.this.grid.getSettings().getTheme().numberFour()
 					);
 					case FIVE -> this.drawNumberFive(
 							g,
 							Cell.this.grid.getSettings().getCellSize().getSize() / 16,
-							new MyUtilities.Coordinates(0, 0),
+							new Coordinates(0, 0),
 							Cell.this.grid.getSettings().getTheme().numberFive()
 					);
 					case SIX -> this.drawNumberSix(
 							g,
 							Cell.this.grid.getSettings().getCellSize().getSize() / 16,
-							new MyUtilities.Coordinates(0, 0),
+							new Coordinates(0, 0),
 							Cell.this.grid.getSettings().getTheme().numberSix()
 					);
 					case SEVEN -> this.drawNumberSeven(
 							g,
 							Cell.this.grid.getSettings().getCellSize().getSize() / 16,
-							new MyUtilities.Coordinates(0, 0),
+							new Coordinates(0, 0),
 							Cell.this.grid.getSettings().getTheme().numberSeven()
 					);
 					case EIGHT -> this.drawNumberEight(
 							g,
 							Cell.this.grid.getSettings().getCellSize().getSize() / 16,
-							new MyUtilities.Coordinates(0, 0),
+							new Coordinates(0, 0),
 							Cell.this.grid.getSettings().getTheme().numberEight()
 					);
 					default -> throw new UnsupportedOperationException("This should never happen.");
 				}
 			}
 		};
+		TextureManager.addPack(this.textures);
 	}
 	
 	/* ---------- CONSTRUCTORS ---------- */
