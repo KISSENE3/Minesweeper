@@ -13,6 +13,7 @@ import java.util.Map;
 
 @SuppressWarnings("unused")
 public abstract class Textures {
+	/* ---------- STATIC FINAL ATTRIBUTES ---------- */
 	
 	public enum Key {
 		BACKGROUND, EXPLODED,
@@ -25,11 +26,20 @@ public abstract class Textures {
 		MINESWEEPER, TITLE
 	}
 	
-	private final Map<Key, BufferedImage> CACHE = new HashMap<>();
+	/* ---------- STATIC FINAL ATTRIBUTES ---------- */
+	/* ---------- FINAL ATTRIBUTES ---------- */
+	
+	protected final Map<Key, BufferedImage> CACHE = new HashMap<>();
+	
+	/* ---------- FINAL ATTRIBUTES ---------- */
+	/* ---------- GETTERS ---------- */
 	
 	public BufferedImage getAsset(Key key) {
 		return CACHE.computeIfAbsent(key, this::renderAsset);
 	}
+	
+	/* ---------- GETTERS ---------- */
+	/* ---------- UTILITIES ---------- */
 	
 	public void clear() {
 		AppLogger.info(CACHE.size() + " graphics cache invalidated.");
@@ -50,7 +60,7 @@ public abstract class Textures {
 		TextureManager.unregister(this);
 	}
 	
-	private @NotNull BufferedImage renderAsset(Key key) {
+	protected @NotNull BufferedImage renderAsset(Key key) {
 		Dimension d = this.getAssetDimension(key);
 		
 		GraphicsConfiguration config = GraphicsEnvironment.getLocalGraphicsEnvironment()
@@ -64,8 +74,14 @@ public abstract class Textures {
 		return img;
 	}
 	
+	/* ---------- UTILITIES ---------- */
+	/* ---------- ABSTRACT METHODS ---------- */
+	
 	protected abstract @NotNull Dimension getAssetDimension(@NotNull Key key);
 	protected abstract void drawMapping(@NotNull Graphics2D g, @NotNull Key key, @NotNull Dimension dimension);
+	
+	/* ---------- ABSTRACT METHODS ---------- */
+	/* ---------- TEXTURES ---------- */
 	
 	protected void drawBackground(@NotNull Graphics2D g, @NotNull Coordinates topLeft, @NotNull Dimension dimension, @Nullable Color color) {
 		Color oldColor = g.getColor();
@@ -438,4 +454,6 @@ public abstract class Textures {
 		
 		g.setColor(oldColor);
 	}
+	
+	/* ---------- TEXTURES ---------- */
 }

@@ -2,6 +2,9 @@ package com.kissene3.gui.screens;
 
 import com.kissene3.game.Difficulty;
 import com.kissene3.game.DifficultyRegistry;
+import com.kissene3.gui.utilities.MyUtilities;
+import com.kissene3.gui.utilities.MyUtilities.Coordinates;
+import com.kissene3.gui.utilities.MyUtilities.Dimension;
 import com.kissene3.gui.utilities.MyUtilities.Rectangle;
 import com.kissene3.gui.Theme;
 import com.kissene3.gui.components.MinesweeperButton;
@@ -9,6 +12,8 @@ import com.kissene3.gui.components.MyLabel;
 import com.kissene3.gui.components.MyScrollList;
 import com.kissene3.gui.components.MyTextBox;
 import com.kissene3.gui.io.AppLogger;
+import com.kissene3.gui.utilities.TextureManager;
+import com.kissene3.gui.utilities.Textures;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
@@ -19,11 +24,44 @@ import java.util.function.Consumer;
 public class DifficultyScreen extends Screen {
 	
 	private final MyTextBox[] textBoxes = new MyTextBox[3];
+	private final Textures textures;
 	private boolean isCustom = false;
 	private String difficulty;
 	
 	public DifficultyScreen(@NotNull ScreenManager manager) {
 		super(manager);
+		this.textures = new Textures() {
+			@Override
+			protected @NotNull Dimension getAssetDimension(@NotNull Key key) {
+				return switch (key) {
+					case BACKGROUND, CLOSED ->
+						new Dimension(DifficultyScreen.this.getWidth(), DifficultyScreen.this.getHeight());
+					default -> throw new UnsupportedOperationException("This should never happen.");
+				};
+			}
+			
+			@Override
+			protected void drawMapping(@NotNull Graphics2D g, @NotNull Key key, @NotNull Dimension dimension) {
+				switch (key) {
+					case BACKGROUND -> this.drawBackground(
+							g,
+							new Coordinates(0, 0),
+							dimension,
+							DifficultyScreen.this.manager.getSettings().getTheme().background()
+					);
+					case CLOSED -> this.drawClosed(
+							g,
+							DifficultyScreen.this.getP(),
+							new Coordinates(0, 0),
+							dimension,
+							DifficultyScreen.this.manager.getSettings().getTheme().backgroundLighterShade(),
+							DifficultyScreen.this.manager.getSettings().getTheme().backgroundDarkerShade()
+					);
+					default -> throw new UnsupportedOperationException("This should never happen.");
+				}
+			}
+		};
+		TextureManager.addPack(this.textures);
 		this.init();
 	}
 	
@@ -41,19 +79,22 @@ public class DifficultyScreen extends Screen {
 					return;
 				
 				if (this.isCustom) {
-					Difficulty d = new Difficulty(
-							Integer.parseInt(this.textBoxes[0].getText()),
-							Integer.parseInt(this.textBoxes[1].getText()),
-							Integer.parseInt(this.textBoxes[2].getText())
-					);
-					this.manager.getSettings().setDifficulty("custom", d);
+					try {
+						Difficulty d = new Difficulty(
+								Integer.parseInt(this.textBoxes[0].getText()),
+								Integer.parseInt(this.textBoxes[1].getText()),
+								Integer.parseInt(this.textBoxes[2].getText())
+						);
+						this.manager.getSettings().setDifficulty("custom", d);
+					} catch (Exception _) {
+						return;
+					}
 				} else {
 					this.manager.getSettings().setDifficulty(this.difficulty, null);
 				}
 				
 				DifficultyScreen.this.manager.popAll();
 				DifficultyScreen.this.manager.pushScreen(new GameScreen(DifficultyScreen.this.manager, this.manager.getSettings().getCurrentDifficulty()));
-				
 			}));
 		
 		this.textBoxes[0] = this.getMyTextbox(128);
@@ -186,6 +227,10 @@ public class DifficultyScreen extends Screen {
 		}
 	}
 	
+	private int getP() {
+		return 5;
+	}
+	
 	@Override
 	public boolean isTransparent() {
 		return true;
@@ -218,34 +263,14 @@ public class DifficultyScreen extends Screen {
 	
 	@Override
 	public void draw(@NotNull Graphics2D g) {
-		int p = 5;
-		this.drawBackground(g);
-		this.drawShades(g, p);
+		g.drawImage(this.textures.getAsset(Textures.Key.BACKGROUND), 0, 0, null);
+		g.drawImage(this.textures.getAsset(Textures.Key.CLOSED), 0, 0, null);
 		this.componentsManager.draw(g);
 	}
 	
-	protected void drawBackground(@NotNull Graphics2D g) {
-		g.setColor(this.manager.getSettings().getTheme().background());
-		g.fillRect(0, 0, this.getWidth(), this.getHeight());
-	}
-	
-	protected void drawShades(@NotNull Graphics2D g, int p) {
-		int p2 = 2 * p;
-		int reducedW = this.getWidth() - p;
-		int reducedW2 = this.getWidth() - p2;
-		int reducedH = this.getHeight() - p;
-		int reducedH2 = this.getHeight() - p2;
-		
-		g.setColor(this.manager.getSettings().getTheme().backgroundLighterShade());
-		g.fillRect(0, 0, reducedW, p);		// top top-line
-		g.fillRect(0, 0, reducedW2, p2);		// bottom top-line
-		g.fillRect(0, 0, p, reducedH);		// left left-line
-		g.fillRect(0, 0, p2, reducedH2);		// right left-line
-		
-		g.setColor(this.manager.getSettings().getTheme().backgroundDarkerShade());
-		g.fillRect(reducedW, p, p, reducedH);		// right right-line
-		g.fillRect(reducedW2, p2, p, reducedH2);	// left right-line
-		g.fillRect(p, reducedH, reducedW, p);		// bottom bottom-line
-		g.fillRect(p2, reducedH2, reducedW2, p);	// top bottom-line
+	@Override
+	public void dispose() {
+		this.textures.dispose();
+		super.dispose();
 	}
 }

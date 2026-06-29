@@ -13,8 +13,9 @@ import java.util.Objects;
 import java.util.Set;
 
 public class ThemeRegistry {
-	@SuppressWarnings("unused")
-	private static final Gson GSON = new GsonBuilder()
+	/* ---------- STATIC FINAL ATTRIBUTES ---------- */
+	
+	protected static final Gson GSON = new GsonBuilder()
 			.registerTypeAdapter(Color.class, (JsonDeserializer<Color>) (json, typeOfT, context) -> {
 				String hex = json.getAsString();
 				if (hex.startsWith("#")) {
@@ -42,22 +43,22 @@ public class ThemeRegistry {
 	 * Map that associates theme name with file path.<br />
 	 * {@code true} is internal (from Resources) while {@code false} is external.
 	 */
-	private static final Map<String, Boolean> CACHE = new HashMap<>();
+	protected static final Map<String, Boolean> CACHE = new HashMap<>();
+	protected static final String EXTERNAL_DIR = Main.BASE_PATH + "themes" + File.separator;
+	protected static final String INTERNAL_DIR = "/themes/";
+	protected static final String[] DEFAULTS = {"light", "dark"};
 	
-	// Constants
-	private static final String EXTERNAL_DIR = Main.BASE_PATH + "themes" + File.separator;
-	private static final String INTERNAL_DIR = "/themes/";
-	private static final String[] DEFAULTS = {"light", "dark"};
+	/* ---------- STATIC FINAL ATTRIBUTES ---------- */
+	/* ---------- CONSTRUCTORS ---------- */
 	
 	static {
 		init();
 	}
 	
 	/**
-	 * Scans every file and populate the {@code Map}.
-	 * To be called at the start of the application.
+	 * Scans every file and populates the {@code Map}.
 	 */
-	private static void init() {
+	protected static void init() {
 		CACHE.clear();
 		
 		// 1. Loads the defaults from Resources.
@@ -94,6 +95,9 @@ public class ThemeRegistry {
 		}
 	}
 	
+	/* ---------- CONSTRUCTORS ---------- */
+	/* ---------- GETTERS ---------- */
+	
 	public static @NotNull Theme get(@NotNull String name) {
 		String key = CACHE.containsKey(name.toLowerCase()) ? name.toLowerCase() : "light";
 		
@@ -128,18 +132,14 @@ public class ThemeRegistry {
 		));
 	}
 	
-	@Contract(pure = true)
 	public static @NotNull Set<String> getAvailableNames() {
 		return CACHE.keySet();
 	}
 	
-	/* \/ \/ Private Helper Methods \/ \/ */
+	/* ---------- GETTERS ---------- */
+	/* ---------- I/O METHODS ---------- */
 	
-	private static boolean isValid(@Nullable Theme t) {
-		return t != null;
-	}
-	
-	private static @Nullable Theme loadFromFile(@NotNull File file) {
+	protected static @Nullable Theme loadFromFile(@NotNull File file) {
 		try (Reader r = new FileReader(file)) {
 			return GSON.fromJson(r, Theme.class);
 		} catch (Exception e) {
@@ -148,7 +148,7 @@ public class ThemeRegistry {
 		}
 	}
 	
-	private static @Nullable Theme loadFromResources(String name) {
+	protected static @Nullable Theme loadFromResources(String name) {
 		try (InputStream is = ThemeRegistry.class.getResourceAsStream(INTERNAL_DIR + name + ".json")) {
 			if (is == null) {
 				AppLogger.warning("Failed to load theme from resources: " + name + ".json");
@@ -160,4 +160,13 @@ public class ThemeRegistry {
 			return null;
 		}
 	}
+	
+	/* ---------- I/O METHODS ---------- */
+	/* ---------- UTILITIES ---------- */
+	
+	protected static boolean isValid(@Nullable Theme t) {
+		return t != null;
+	}
+	
+	/* ---------- UTILITIES ---------- */
 }

@@ -1,5 +1,7 @@
 package com.kissene3.main;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -8,7 +10,12 @@ import java.util.List;
 import java.util.Map;
 
 public class Main {
+	/* ---------- STATIC FINAL ATTRIBUTES ---------- */
+	
 	public static final String BASE_PATH;
+	
+	/* ---------- STATIC FINAL ATTRIBUTES ---------- */
+	/* ---------- CONSTRUCTORS ---------- */
 	
 	static {
 		
@@ -49,6 +56,9 @@ public class Main {
 		}
 	}
 	
+	/* ---------- CONSTRUCTORS ---------- */
+	/* ---------- UTILITIES ---------- */
+	
 	private static void copyResourceToFile(String resourcePath, String destinationSubPath) {
 		File destination = new File(BASE_PATH + destinationSubPath);
 		
@@ -64,11 +74,29 @@ public class Main {
 		}
 	}
 	
+	/* ---------- UTILITIES ---------- */
+	/* ---------- MAIN ---------- */
+	
 	@SuppressWarnings("UnnecessaryModifier")
-	public static void main(String[] args) {
-		if (args.length > 0 && ("cli".equalsIgnoreCase(args[0]) || "console".equalsIgnoreCase(args[0]) || "terminal".equalsIgnoreCase(args[0])))
-			new CLIMain();
-		else
+	public static void main(@Nullable String[] args) {
+		if (args == null || args.length != 1) {
 			new GUIMain();
+			return;
+		}
+		
+		String rawArg = args[0];
+		if (rawArg == null) {
+			new GUIMain();
+			return;
+		}
+		
+		String text = rawArg.toLowerCase();
+		
+		switch (text) {
+			case "cli", "console", "terminal" -> new CLIMain();
+			default -> new GUIMain();
+		}
 	}
+	
+	/* ---------- MAIN ---------- */
 }

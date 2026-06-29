@@ -1,5 +1,6 @@
 package com.kissene3.gui.components;
 
+import com.kissene3.gui.interfaces.Component;
 import com.kissene3.gui.utilities.MyUtilities.*;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -7,13 +8,12 @@ import org.jetbrains.annotations.NotNull;
 import static java.util.Objects.requireNonNull;
 
 /**
- * <p>The basic component that all other GUI components extend.</p>
- * <p>It provides basic functionalities like position, size and activity.</p>
- * <p>It also includes a utility method to check if a point is within its bounds.</p>
+ * The basic component that all other GUI components extend.<br />
+ * It provides basic functionalities like position, size and activity.<br />
+ * It also includes a utility method to check if a point is within its bounds.
  */
 @SuppressWarnings("unused")
-public abstract class MyComponent {
-	
+public abstract class MyComponent implements Component {
 	/* ---------- ATTRIBUTES ---------- */
 	
 	private Rectangle bounds;
@@ -39,12 +39,12 @@ public abstract class MyComponent {
 	/* ---------- CONSTRUCTORS ---------- */
 	/* ---------- SPATIAL GETTERS/SETTERS ---------- */
 	
-	@Contract(pure = true)
 	public final @NotNull Rectangle getBounds() {
 		return this.bounds;
 	}
 	
 	/** The master setter for the component's bounds. All other spatial setters delegate to this method. */
+	@Override
 	public final void setBounds(@NotNull Rectangle bounds) {
 		this.bounds = requireNonNull(bounds);
 		this.onBoundsChanged();
@@ -54,11 +54,12 @@ public abstract class MyComponent {
 		this.setBounds(new Rectangle(topLeft, dimensions));
 	}
 	
+	@Override
 	public final void setBounds(int x, int y, int width, int height) {
 		this.setBounds(new Rectangle(x, y, width, height));
 	}
 	
-	@Contract(pure = true)
+	@Override
 	public final int getX() {
 		return this.bounds.x();
 	}
@@ -66,7 +67,7 @@ public abstract class MyComponent {
 		this.setBounds(this.bounds.withX(x));
 	}
 	
-	@Contract(pure = true)
+	@Override
 	public final int getY() {
 		return this.bounds.y();
 	}
@@ -74,7 +75,7 @@ public abstract class MyComponent {
 		this.setBounds(this.bounds.withY(y));
 	}
 	
-	@Contract(pure = true)
+	@Override
 	public final int getWidth() {
 		return this.bounds.width();
 	}
@@ -82,7 +83,7 @@ public abstract class MyComponent {
 		this.setBounds(this.bounds.withWidth(width));
 	}
 	
-	@Contract(pure = true)
+	@Override
 	public final int getHeight() {
 		return this.bounds.height();
 	}
@@ -90,7 +91,6 @@ public abstract class MyComponent {
 		this.setBounds(this.bounds.withHeight(height));
 	}
 	
-	@Contract(pure = true)
 	public final @NotNull Coordinates getTopLeft() {
 		return this.bounds.topLeft();
 	}
@@ -101,12 +101,10 @@ public abstract class MyComponent {
 		this.setTopLeft(new Coordinates(x, y));
 	}
 	
-	@Contract(pure = true)
 	public final @NotNull Coordinates getBottomRight() {
 		return this.bounds.bottomRight();
 	}
 	
-	@Contract(pure = true)
 	public final @NotNull Dimension getDimensions() {
 		return this.bounds.dimensions();
 	}
@@ -120,10 +118,11 @@ public abstract class MyComponent {
 	/* ---------- SPATIAL/SETTERS ---------- */
 	/* ---------- FLAGS GETTERS/SETTERS ---------- */
 	
-	@Contract(pure = true)
+	@Override
 	public boolean isActive() {
 		return this.isActive;
 	}
+	@Override
 	public void setActive(boolean isActive) {
 		this.isActive = isActive;
 	}
@@ -138,6 +137,7 @@ public abstract class MyComponent {
 	 * @return {@code true} if the coordinates are within the component's bounds, {@code false} otherwise.
 	 */
 	@Contract(pure = true)
+	@Override
 	public boolean contains(int mx, int my) {
 		return this.bounds.contains(mx, my);
 	}
@@ -173,6 +173,9 @@ public abstract class MyComponent {
 	}
 	
 	protected void onBoundsChanged() {}
+	
+	@Override
+	public void dispose() {}
 	
 	/* ---------- UTILITY ---------- */
 }

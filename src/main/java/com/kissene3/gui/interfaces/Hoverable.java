@@ -1,6 +1,5 @@
 package com.kissene3.gui.interfaces;
 
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.event.MouseEvent;
@@ -28,7 +27,6 @@ public interface Hoverable {
 	void onExit(@NotNull MouseEvent e);
 	
 	/** Gets the hovered state of the component. */
-	@Contract(pure = true)
 	boolean isHovered();
 	
 	/** Sets the hovered state of the component. */

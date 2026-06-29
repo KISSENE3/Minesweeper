@@ -8,6 +8,7 @@ import static java.util.Objects.requireNonNull;
 /** A container class containing records and methods for handling the code. */
 @SuppressWarnings("unused")
 public final class MyUtilities {
+	/* ---------- RECORDS ---------- */
 	
 	/**
 	 * Represents a point in a 2D plane.
@@ -15,6 +16,7 @@ public final class MyUtilities {
 	 * @param y vertical coordinate
 	 */
 	public record Coordinates(int x, int y) {
+		/* ---------- GETTERS ---------- */
 		
 		@Contract(value = "_ -> new", pure = true)
 		public @NotNull Coordinates withX(int x) {
@@ -25,10 +27,13 @@ public final class MyUtilities {
 		public @NotNull Coordinates withY(int y) {
 			return new Coordinates(this.x, y);
 		}
+		
+		/* ---------- GETTERS ---------- */
 	}
 	
 	/** Represents the spatial extent of a component. */
 	public record Dimension(int width, int height) {
+		/* ---------- CONSTRUCTORS ---------- */
 		
 		/** @throws IllegalArgumentException if width or height are negative. */
 		public Dimension {
@@ -37,6 +42,9 @@ public final class MyUtilities {
 						String.format("Width (entered %d) and height (entered %d) cannot be negative.", width, height)
 				);
 		}
+		
+		/* ---------- CONSTRUCTORS ---------- */
+		/* ---------- GETTERS ---------- */
 		
 		@Contract(value = "_ -> new", pure = true)
 		public @NotNull Dimension withWidth(int width) {
@@ -47,10 +55,25 @@ public final class MyUtilities {
 		public @NotNull Dimension withHeight(int height) {
 			return new Dimension(this.width, height);
 		}
+		
+		/* ---------- GETTERS ---------- */
 	}
 	
 	/** Represents a rectangle in a 2D plane. */
 	public record Rectangle(@NotNull Coordinates topLeft, @NotNull Dimension dimensions) {
+		/* ---------- CONSTRUCTORS ---------- */
+		
+		public Rectangle(int x, int y, int width, int height) {
+			this(new Coordinates(x, y), new Dimension(width, height));
+		}
+		
+		public Rectangle(@NotNull Coordinates topLeft, int width, int height) {
+			this(topLeft, new Dimension(width, height));
+		}
+		
+		public Rectangle(int x, int y, @NotNull Dimension dimensions) {
+			this(new Coordinates(x, y), dimensions);
+		}
 		
 		/** @throws NullPointerException if topLeft or dimensions are null. */
 		public Rectangle {
@@ -58,54 +81,8 @@ public final class MyUtilities {
 			requireNonNull(dimensions, "Dimensions cannot be null");
 		}
 		
-		public Rectangle(int x, int y, int width, int height) {
-			this(new Coordinates(x, y), new Dimension(width, height));
-		}
-		
-		/**
-		 * Checks if the specified point is contained within this rectangle.
-		 * <p>
-		 * The check is inclusive of the top-left corner and exclusive of the
-		 * bottom-right corner.
-		 *</p>
-		 * @param point the {@link Coordinates Coordinates} to check.
-		 * @return {@code true} if the point is within the rectangle's bounds, {@code false} otherwise.
-		 * @throws NullPointerException if {@code point} is {@code null}.
-		 */
-		@Contract(pure = true)
-		public boolean contains(@NotNull Coordinates point) throws NullPointerException {
-			Coordinates bottomRight = this.bottomRight();
-			return point.x() >= this.topLeft.x()
-					&& point.x() < bottomRight.x()
-					&& point.y() >= this.topLeft.y()
-					&& point.y() < bottomRight.y();
-		}
-		
-		/**
-		 * Checks if the specified (x, y) coordinates are contained within this rectangle.
-		 *
-		 * @param x the horizontal coordinate to check.
-		 * @param y the vertical coordinate to check.
-		 * @return {@code true} if the coordinates are within the rectangle's bounds, {@code false} otherwise.
-		 * @see #contains(Coordinates) contains(Coordinates)
-		 */
-		@Contract(pure = true)
-		public boolean contains(int x, int y) {
-			return this.contains(new Coordinates(x, y));
-		}
-		
-		/**
-		 * Checks if the specified rectangle is entirely contained within this rectangle.
-		 *
-		 * @param other the {@link Rectangle Rectangle} to check.
-		 * @return {@code true} if the other rectangle is completely inside this one, {@code false} otherwise.
-		 * @throws NullPointerException if {@code other} is {@code null}.
-		 */
-		@Contract(pure = true)
-		public boolean contains(@NotNull Rectangle other) throws NullPointerException {
-			requireNonNull(other, "The rectangle to check cannot be null");
-			return this.contains(other.topLeft()) && this.contains(other.bottomRight().x() - 1, other.bottomRight().y() - 1);
-		}
+		/* ---------- CONSTRUCTORS ---------- */
+		/* ---------- GETTERS ---------- */
 		
 		@Contract(value = " -> new", pure = true)
 		public @NotNull Coordinates bottomRight() {
@@ -161,10 +138,61 @@ public final class MyUtilities {
 		public int height() {
 			return this.dimensions.height();
 		}
+		
+		/* ---------- GETTERS ---------- */
+		/* ---------- UTILITIES ---------- */
+		
+		/**
+		 * Checks if the specified (x, y) coordinates are contained within this rectangle.
+		 * @param x the horizontal coordinate to check.
+		 * @param y the vertical coordinate to check.
+		 * @return {@code true} if the coordinates are within the rectangle's bounds, {@code false} otherwise.
+		 * @see #contains(Coordinates) contains(Coordinates)
+		 */
+		@Contract(pure = true)
+		public boolean contains(int x, int y) {
+			return this.contains(new Coordinates(x, y));
+		}
+		
+		/**
+		 * Checks if the specified point is contained within this rectangle.<br />
+		 * @param point the {@link Coordinates Coordinates} to check.
+		 * @return {@code true} if the point is within the rectangle's bounds, {@code false} otherwise.
+		 * @throws NullPointerException if {@code point} is {@code null}.
+		 */
+		@Contract(pure = true)
+		public boolean contains(@NotNull Coordinates point) {
+			Coordinates bottomRight = this.bottomRight();
+			return point.x() >= this.topLeft.x()
+					&& point.x() < bottomRight.x()
+					&& point.y() >= this.topLeft.y()
+					&& point.y() < bottomRight.y();
+		}
+		
+		/**
+		 * Checks if the specified rectangle is entirely contained within this rectangle.
+		 * @param other the {@link Rectangle Rectangle} to check.
+		 * @return {@code true} if the other rectangle is completely inside this one, {@code false} otherwise.
+		 * @throws NullPointerException if {@code other} is {@code null}.
+		 */
+		@Contract(pure = true)
+		public boolean contains(@NotNull Rectangle other) {
+			requireNonNull(other);
+			return other.x() >= this.x() &&
+					other.y() >= this.y() &&
+					(other.x() + other.width()) <= (this.x() + this.width()) &&
+					(other.y() + other.height()) <= (this.y() + this.height());
+		}
+		
+		/* ---------- UTILITIES ---------- */
 	}
 	
+	/* ---------- RECORDS ---------- */
+	/* ---------- CONSTRUCTORS ---------- */
 	
 	private MyUtilities() {
-		throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
+		throw new UnsupportedOperationException("This is a utility class and cannot be instantiated.");
 	}
+	
+	/* ---------- CONSTRUCTORS ---------- */
 }

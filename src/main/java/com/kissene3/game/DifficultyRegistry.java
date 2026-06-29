@@ -9,18 +9,21 @@ import java.io.*;
 import java.util.*;
 
 public class DifficultyRegistry {
-	private static final Gson GSON = new Gson();
+	/* ---------- STATIC FINAL ATTRIBUTES ---------- */
+	
+	protected static final Gson GSON = new Gson();
 	
 	/**
 	 * Map that associates difficulty name with file path.<br />
 	 * {@code true} is internal (from Resources) while {@code false} is external.
 	 */
-	private static final Map<String, Boolean> CACHE = new HashMap<>();
+	protected static final Map<String, Boolean> CACHE = new HashMap<>();
+	protected static final String EXTERNAL_DIR = Main.BASE_PATH + "difficulties" + File.separator;
+	protected static final String INTERNAL_DIR = "/difficulties/";
+	protected static final String[] DEFAULTS = {"easy", "medium", "hard"};
 	
-	// Constants
-	private static final String EXTERNAL_DIR = Main.BASE_PATH + "difficulties" + File.separator;
-	private static final String INTERNAL_DIR = "/difficulties/";
-	private static final String[] DEFAULTS = {"easy", "medium", "hard"};
+	/* ---------- STATIC FINAL ATTRIBUTES ---------- */
+	/* ---------- CONSTRUCTORS ---------- */
 	
 	static {
 		init();
@@ -28,9 +31,8 @@ public class DifficultyRegistry {
 	
 	/**
 	 * Scans every file and populate the {@code Map}.
-	 * To be called at the start of the application.
 	 */
-	private static void init() {
+	protected static void init() {
 		CACHE.clear();
 		
 		// 1. Loads the defaults from Resources.
@@ -44,7 +46,7 @@ public class DifficultyRegistry {
 			AppLogger.info("Loaded difficulty from resources: " + name);
 		}
 		
-		// 2. Override or add from external files.
+		// 2. Overrides or adds from external files.
 		File dir = new File(EXTERNAL_DIR);
 		if (!dir.exists() || !dir.isDirectory())
 			return;
@@ -67,13 +69,20 @@ public class DifficultyRegistry {
 		}
 	}
 	
+	/* ---------- CONSTRUCTORS ---------- */
+	/* ---------- GETTERS ---------- */
+	
 	public static @NotNull Difficulty get(@NotNull String name) {
 		String key = CACHE.containsKey(name.toLowerCase()) ? name.toLowerCase() : "easy";
 		Boolean isInternal = CACHE.getOrDefault(key, true);
 		
 		Difficulty d = isInternal ? loadFromResources(key) : loadFromFile(new File(EXTERNAL_DIR + key + ".json"));
 		
-		return Objects.requireNonNullElseGet(d, () -> new Difficulty(9, 9, 10));
+		if (!isValid(d)) {
+			return new Difficulty(9, 9, 10);
+		}
+		
+		return d;
 	}
 	
 	public static @NotNull Set<String> getAvailableNames() {
@@ -83,14 +92,15 @@ public class DifficultyRegistry {
 	public static @NotNull @Unmodifiable List<String> getAvailableNamesSorted() {
 		return CACHE.keySet().stream().sorted().toList();
 	}
+
+	/* ---------- GETTERS ---------- */
+	/* ---------- HELPER METHODS ---------- */
 	
-	/* \/ \/ Private Helper Methods \/ \/ */
-	
-	private static boolean isValid(@Nullable Difficulty d) {
+	protected static boolean isValid(@Nullable Difficulty d) {
 		return d != null && d.width() * d.height() - 9 > 0;
 	}
 	
-	private static @Nullable Difficulty loadFromFile(@NotNull File file) {
+	protected static @Nullable Difficulty loadFromFile(@NotNull File file) {
 		try (Reader r = new FileReader(file)) {
 			return GSON.fromJson(r, Difficulty.class);
 		} catch (Exception e) {
@@ -99,7 +109,7 @@ public class DifficultyRegistry {
 		}
 	}
 	
-	private static @Nullable Difficulty loadFromResources(String name) {
+	protected static @Nullable Difficulty loadFromResources(String name) {
 		try (InputStream is = DifficultyRegistry.class.getResourceAsStream(INTERNAL_DIR + name + ".json")) {
 			if (is == null) {
 				AppLogger.warning("Failed to load difficulty from resources: " + name + ".json");
@@ -111,4 +121,6 @@ public class DifficultyRegistry {
 			return null;
 		}
 	}
+	
+	/* ---------- HELPER METHODS ---------- */
 }

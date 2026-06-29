@@ -1,6 +1,5 @@
 package com.kissene3.gui.interfaces;
 
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.event.KeyEvent;
@@ -28,7 +27,6 @@ public interface Focusable {
 	void onKeyReleased(@NotNull KeyEvent e);
 	
 	/** Gets the focus state of the component. */
-	@Contract(pure = true)
 	boolean isFocused();
 	
 	/** Sets the focus state of the component to the specified value. */

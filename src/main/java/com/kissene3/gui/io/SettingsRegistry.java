@@ -9,9 +9,14 @@ import java.io.*;
 import java.nio.file.*;
 
 public class SettingsRegistry {
-	private static final String FILE_PATH = Main.BASE_PATH + "saves" + File.separator + "settings.json";
-	private static final String TEMP_PATH = FILE_PATH + ".tmp";
-	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+	/* ---------- STATIC FINAL ATTRIBUTES ---------- */
+	
+	protected static final String FILE_PATH = Main.BASE_PATH + "saves" + File.separator + "settings.json";
+	protected static final String TEMP_PATH = FILE_PATH + ".tmp";
+	protected static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+	
+	/* ---------- STATIC FINAL ATTRIBUTES ---------- */
+	/* ---------- I/O METHODS ---------- */
 	
 	/**
 	 * Only saves the differences from the default.<br />
@@ -58,8 +63,8 @@ public class SettingsRegistry {
 	}
 	
 	/**
-	 * Loads the settings. If the file doesn't exist or is empty {},
-	 * default values are given.
+	 * Loads the settings.<br />
+	 * If the file doesn't exist or is empty {}, default values are given.
 	 */
 	public static @NotNull Settings load() {
 		File file = new File(FILE_PATH);
@@ -84,11 +89,14 @@ public class SettingsRegistry {
 		}
 	}
 	
+	/* ---------- I/O METHODS ---------- */
+	/* ---------- UTILITIES ---------- */
+	
 	/**
 	 * Compares entered settings with the default ones and returns
 	 * a {@code JsonObject} containing the differences.
 	 */
-	private static @NotNull JsonObject getDelta(@NotNull Settings current) {
+	protected static @NotNull JsonObject getDelta(@NotNull Settings current) {
 		Settings def = new Settings();
 		JsonObject json = new JsonObject();
 		
@@ -97,7 +105,7 @@ public class SettingsRegistry {
 			json.addProperty("theme", current.getThemeKey());
 		}
 		
-		// Cell Size
+		// CellBrutta Size
 		if (current.getCellSize() != def.getCellSize()) {
 			json.addProperty("cell_size", current.getCellSize().name());
 		}
@@ -115,4 +123,6 @@ public class SettingsRegistry {
 		
 		return json;
 	}
+	
+	/* ---------- UTILITIES ---------- */
 }

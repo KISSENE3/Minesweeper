@@ -12,12 +12,15 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 
 /** A graphical text input component */
 @SuppressWarnings("unused")
 public class MyTextBox extends MyAbstractButton implements Focusable {
 	
 	/* ---------- ATTRIBUTES ---------- */
+	
+	private FontMetrics cachedFontMetrics = null;
 	
 	/** Indicates if the component is currently receiving keyboard input. */
 	private boolean isFocused = false;
@@ -188,6 +191,7 @@ public class MyTextBox extends MyAbstractButton implements Focusable {
 	public boolean isFocused() {
 		return this.isFocused;
 	}
+	
 	@Override
 	public void setFocus(boolean focused) {
 		this.isFocused = focused;
@@ -199,12 +203,19 @@ public class MyTextBox extends MyAbstractButton implements Focusable {
 	
 	@Override
 	public void onKeyTyped(@NotNull KeyEvent e) {
+		if (e.isControlDown() || e.isAltDown()) {
+			return;
+		}
+		
 		char c = e.getKeyChar();
+		
+		if (c == KeyEvent.VK_BACK_SPACE || c == KeyEvent.VK_DELETE) {
+			return;
+		}
 		
 		if (this.isValidChar(c) && this.text.length() < this.maxCharacters) {
 			this.text.insert(this.cursorIndex, c);
 			this.cursorIndex++;
-			this.updateScroll();
 		}
 	}
 	
@@ -227,8 +238,6 @@ public class MyTextBox extends MyAbstractButton implements Focusable {
 		} else if (code == KeyEvent.VK_RIGHT && this.cursorIndex < this.text.length()) {
 			this.cursorIndex++;
 		}
-		
-		this.updateScroll();
 	}
 	
 	@Override
@@ -241,6 +250,9 @@ public class MyTextBox extends MyAbstractButton implements Focusable {
 	public void draw(@NotNull Graphics2D g) {
 		if (!this.isVisible) return;
 		
+		g.setFont(this.font);
+		this.cachedFontMetrics = g.getFontMetrics();
+		
 		// 1. Prepare Colors
 		Color background = this.isActive ? this.backgroundColor : this.disabledBackgroundColor;
 		Color border = this.isActive ? (this.isFocused ? Color.BLUE : this.borderColor) : this.disabledBorderColor;
@@ -251,15 +263,14 @@ public class MyTextBox extends MyAbstractButton implements Focusable {
 		g.fillRect(this.getX(), this.getY(), this.getWidth(), this.getHeight());
 		g.setColor(border);
 		g.drawRect(this.getX(), this.getY(), this.getWidth(), this.getHeight());
-		if (this.isFocused && this.isActive) g.drawRect(this.getX() + 1, this.getY() + 1, this.getWidth() - 2, this.getHeight() - 2);
+		if (this.isFocused && this.isActive)
+			g.drawRect(this.getX() + 1, this.getY() + 1, this.getWidth() - 2, this.getHeight() - 2);
 		
 		// 3. Text and Placeholder
-		g.setFont(this.font);
-		FontMetrics fm = g.getFontMetrics();
-		this.updateScroll();
+		this.updateScroll(this.cachedFontMetrics);
 		
 		int textX = this.getX() + 5;
-		int textY = this.getY() + (this.getHeight() + fm.getAscent()) / 2 - 2;
+		int textY = this.getY() + (this.getHeight() + this.cachedFontMetrics.getAscent()) / 2 - 2;
 		
 		// --- CLIPPING AREA ---
 		Shape oldClip = g.getClip();
@@ -275,7 +286,7 @@ public class MyTextBox extends MyAbstractButton implements Focusable {
 		
 		// --- CURSOR ---
 		if (this.isFocused && this.isActive && (System.currentTimeMillis() / 500) % 2 == 0) {
-			int cursorPosX = fm.stringWidth(this.text.substring(0, this.cursorIndex));
+			int cursorPosX = this.cachedFontMetrics.stringWidth(this.text.substring(0, this.cursorIndex));
 			int finalCursorX = textX + cursorPosX - this.scrollOffset;
 			g.drawLine(finalCursorX, this.getY() + 5, finalCursorX, this.getY() + this.getHeight() - 5);
 		}
@@ -288,12 +299,13 @@ public class MyTextBox extends MyAbstractButton implements Focusable {
 	
 	@Override
 	public void onPress(@NotNull MouseEvent e) {
-		this.isFocused = true;
-		
 		int mx = e.getX();
 		int relativeX = mx - (this.getX() + 5) + this.scrollOffset;
 		
-		FontMetrics fm = new Canvas().getFontMetrics(this.font);
+		FontMetrics fm = this.cachedFontMetrics != null ? this.cachedFontMetrics :
+				GraphicsEnvironment.getLocalGraphicsEnvironment()
+						.createGraphics(new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB))
+						.getFontMetrics(this.font);
 		
 		if (relativeX <= 0) {
 			this.cursorIndex = 0;
@@ -318,11 +330,13 @@ public class MyTextBox extends MyAbstractButton implements Focusable {
 		this.cursorIndex = bestIndex;
 	}
 	
+	@Override
+	public void onClick(@NotNull MouseEvent e) {}
+	
 	/* ---------- @Override Clickable ---------- */
 	/* ---------- UTILITY ---------- */
 	
-	private void updateScroll() {
-		FontMetrics fm = new Canvas().getFontMetrics(this.font);
+	private void updateScroll(@NotNull FontMetrics fm) {
 		int visibleWidth = this.getWidth() - 10;
 		
 		int cursorPosX = fm.stringWidth(this.text.substring(0, this.cursorIndex));

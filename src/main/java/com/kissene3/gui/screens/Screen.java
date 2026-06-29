@@ -1,7 +1,10 @@
 package com.kissene3.gui.screens;
 
 import com.kissene3.gui.*;
+import com.kissene3.gui.interfaces.Component;
+import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.NotNull;
+import java.util.List;
 
 import java.awt.*;
 
@@ -11,15 +14,15 @@ public abstract class Screen {
 	/* ---------- ATTRIBUTES ---------- */
 	
 	protected ScreenManager manager;
-	protected MyGUIManager componentsManager;
-	Color backgroundColor = Color.BLACK;
+	protected ComponentManager componentsManager;
+	protected Color backgroundColor = Color.BLACK;
 	
 	/* ---------- ATTRIBUTES ---------- */
 	/* ---------- CONSTRUCTORS ---------- */
 	
 	public Screen(@NotNull ScreenManager manager) {
 		this.manager = manager;
-		this.componentsManager = new MyGUIManager(this);
+		this.componentsManager = new ComponentManager(this);
 	}
 	
 	/* ---------- CONSTRUCTORS ---------- */
@@ -37,7 +40,7 @@ public abstract class Screen {
 	/* ---------- ABSTRACTS ---------- */
 	/* ---------- GETTERS/SETTERS ---------- */
 	
-	public MyGUIManager getComponentsManager() {
+	public ComponentManager getComponentsManager() {
 		return this.componentsManager;
 	}
 	
@@ -49,4 +52,14 @@ public abstract class Screen {
 	}
 	
 	/* ---------- GETTERS/SETTERS ---------- */
+	/* ---------- METHODS ---------- */
+	
+	@MustBeInvokedByOverriders
+	public void dispose() {
+		List<Component> components = this.componentsManager.getComponents();
+		components.forEach(Component::dispose);
+		this.componentsManager.removeAllComponents();
+	}
+	
+	/* ---------- METHODS ---------- */
 }

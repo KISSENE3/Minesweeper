@@ -11,7 +11,12 @@ import java.awt.event.WindowEvent;
 import java.awt.image.BufferStrategy;
 
 public class GUIMain {
+	/* ---------- ATTRIBUTES ---------- */
+	
 	public Settings settings;
+	
+	/* ---------- ATTRIBUTES ---------- */
+	/* ---------- CONSTRUCTORS ---------- */
 	
 	public GUIMain() {
 		AppLogger.info("Booting...");
@@ -43,7 +48,10 @@ public class GUIMain {
 		this.startTicking(screenManager);
 	}
 	
-	private void startRendering(Canvas canvas, ScreenManager sm) {
+	/* ---------- CONSTRUCTORS ---------- */
+	/* ---------- UTILITIES ---------- */
+	
+	protected void startRendering(Canvas canvas, ScreenManager sm) {
 		new Thread(() -> {
 			canvas.createBufferStrategy(2);
 			BufferStrategy bs = canvas.getBufferStrategy();
@@ -67,7 +75,7 @@ public class GUIMain {
 		}).start();
 	}
 	
-	private void startTicking(ScreenManager sm) {
+	protected void startTicking(ScreenManager sm) {
 		new Thread(() -> {
 			long lastTime = System.nanoTime();
 			double nsPerTick = 1000000000.0 / 30.0;	// 30 TPS
@@ -89,4 +97,6 @@ public class GUIMain {
 			}
 		}).start();
 	}
+	
+	/* ---------- UTILITIES ---------- */
 }

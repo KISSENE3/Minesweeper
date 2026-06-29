@@ -34,21 +34,21 @@ public class MenuScreen extends Screen {
 			{'M', ' ', 'M', ' ', 'M', ' ', ' ', ' ', 'M', ' ', ' ', 'M', ' ', ' ', 'M', ' '},
 			{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', 'M', 'M', 'M', ' ', ' ', ' ', ' ', 'M'}
 	};
-	private static final int cellSize = 64;
+	private static final int CELL_SIZE = 64;
+	private static final int P_TITLE = 8;
 	private final Textures textures;
 	
 	public MenuScreen(@NotNull ScreenManager manager) {
 		super(manager);
 		this.init();
-		int pCell = cellSize / 16;
-		int pTitle = 8;
+		int pCell = CELL_SIZE / 16;
 		this.textures = new Textures() {
 			@Override
 			protected @NotNull Dimension getAssetDimension(@NotNull Key key) {
 				return switch (key) {
 					case BACKGROUND, EXPLODED, CLOSED, REVEALED, MINE, FLAG, CROSS,
-						 ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT ->  new Dimension(cellSize, cellSize);
-					case TITLE -> new Dimension(121 * pTitle, 16 * pTitle);
+						 ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT ->  new Dimension(CELL_SIZE, CELL_SIZE);
+					case TITLE -> new Dimension(121 * P_TITLE, 16 * P_TITLE);
 					default -> throw new UnsupportedOperationException("This should never happen.");
 				};
 			}
@@ -59,26 +59,26 @@ public class MenuScreen extends Screen {
 					case BACKGROUND -> this.drawBackground(
 							g,
 							new Coordinates(0, 0),
-							this.getAssetDimension(Key.BACKGROUND),
+							dimension,
 							MenuScreen.this.manager.getSettings().getTheme().background()
 					);
 					case EXPLODED -> this.drawBackground(
 							g,
 							new Coordinates(0, 0),
-							this.getAssetDimension(Key.EXPLODED),
+							dimension,
 							MenuScreen.this.manager.getSettings().getTheme().backgroundExplodedMine()
 					);
 					case CLOSED -> this.drawClosed(
 							g, pCell,
 							new Coordinates(0, 0),
-							this.getAssetDimension(Key.CLOSED),
+							dimension,
 							MenuScreen.this.manager.getSettings().getTheme().backgroundLighterShade(),
 							MenuScreen.this.manager.getSettings().getTheme().backgroundDarkerShade()
 					);
 					case REVEALED -> this.drawRevealed(
 							g, pCell,
 							new Coordinates(0, 0),
-							this.getAssetDimension(Key.REVEALED),
+							dimension,
 							MenuScreen.this.manager.getSettings().getTheme().border()
 					);
 					case MINE -> this.drawMine(
@@ -96,7 +96,7 @@ public class MenuScreen extends Screen {
 					case CROSS -> this.drawCross(
 							g, pCell,
 							new Coordinates(0, 0),
-							this.getAssetDimension(Key.CROSS),
+							dimension,
 							MenuScreen.this.manager.getSettings().getTheme().cross()
 					);
 					case ONE -> this.drawNumberOne(
@@ -140,7 +140,7 @@ public class MenuScreen extends Screen {
 							MenuScreen.this.manager.getSettings().getTheme().numberEight()
 					);
 					case TITLE -> this.drawTitle(
-							g, pTitle,
+							g, P_TITLE,
 							new Coordinates(0, 0),
 							MenuScreen.this.manager.getSettings().getTheme().title(),
 							MenuScreen.this.manager.getSettings().getTheme().titleOutline()
@@ -234,9 +234,9 @@ public class MenuScreen extends Screen {
 		g.setColor(Color.BLACK);
 		g.fillRect(0, 0, this.getWidth(), this.getHeight());
 		
-		for (int y = 0; y < backgroundLayout.length; y++)
-			for (int x = 0; x < backgroundLayout[y].length; x++)
-				this.drawCell(g, backgroundLayout[y][x], x * cellSize, y * cellSize);
+		for (int y = 0; y < this.backgroundLayout.length; y++)
+			for (int x = 0; x < this.backgroundLayout[y].length; x++)
+				this.drawCell(g, this.backgroundLayout[y][x], x * CELL_SIZE, y * CELL_SIZE);
 		
 		g.setColor(new Color(
 				this.manager.getSettings().getTheme().background().getRed(),
@@ -246,9 +246,8 @@ public class MenuScreen extends Screen {
 		));
 		g.fillRect(0, 0, this.getWidth(), this.getHeight());
 		
-		int pTitle = 8;
-		int startX = (this.getWidth() - Title.getFullWidth(pTitle)) / 2;
-		Title.draw(g, pTitle, startX, 150, this.manager.getSettings().getTheme());
+		int startX = (this.getWidth() - 121 * P_TITLE) / 2;
+		g.drawImage(this.getTexture(Textures.Key.TITLE), startX, 150, null);
 		
 		this.componentsManager.draw(g);
 	}
@@ -295,117 +294,10 @@ public class MenuScreen extends Screen {
 	public void onTick() {
 		this.componentsManager.onTick();
 	}
-}
-
-class Title {
 	
-	private Title() {}
-	
-	public static int getFullWidth(int p) {
-		return 119 * p;
-	}
-	
-	public static void draw(@NotNull Graphics2D g, int p, int x, int y, @NotNull Theme theme) {
-		int offset = Math.max(1, p / 4);
-		
-		g.setColor(theme.titleOutline());
-		
-		renderFullText(g, p, x - offset, y);
-		renderFullText(g, p, x + offset, y);
-		renderFullText(g, p, x, y - offset);
-		renderFullText(g, p, x, y + offset);
-		renderFullText(g, p, x - offset, y - offset);
-		renderFullText(g, p, x - offset, y + offset);
-		renderFullText(g, p, x + offset, y - offset);
-		renderFullText(g, p, x + offset, y + offset);
-		
-		
-		g.setColor(theme.title());
-		renderFullText(g, p, x, y);
-	}
-	
-	private static void renderFullText(@NotNull Graphics2D g, int p, int x, int y) {
-		drawM(g, p, x, y); x += 12 * p;
-		drawI(g, p, x, y); x += 5 * p;
-		drawN(g, p, x, y); x += 12 * p;
-		drawE(g, p, x, y); x += 11 * p;
-		drawS(g, p, x, y); x += 12 * p;
-		drawW(g, p, x, y); x += 12 * p;
-		drawE(g, p, x, y); x += 11 * p;
-		drawE(g, p, x, y); x += 11 * p;
-		drawP(g, p, x, y); x += 12 * p;
-		drawE(g, p, x, y); x += 11 * p;
-		drawR(g, p, x, y);
-	}
-	
-	/** Size == 10p */
-	private static void drawM(@NotNull Graphics2D g, int p, int x, int y) {
-		g.fillRect(x, y + 3 * p, 2 * p, 10 * p);				// left column
-		g.fillRect(x + 8 * p, y + 3 * p, 2 * p, 10 * p);		// right column
-		g.fillRect(x + 2 * p, y + 3 * p, p, 3 * p);					// leftest segment
-		g.fillRect(x + 7 * p, y + 3 * p, p, 3 * p);					// rightest segment
-		g.fillRect(x + 3 * p, y + 4 * p, p, 3 * p);					// left segment
-		g.fillRect(x + 6 * p, y + 4 * p, p, 3 * p);					// right segment
-		g.fillRect(x + 4 * p, y + 5 * p, 2 * p, 3 * p);		// middle rectangle
-	}
-	
-	/** Size == 3p */
-	private static void drawI(@NotNull Graphics2D g, int p, int x, int y) {
-		g.fillRect(x, y + 3 * p, 3 * p, 10 * p);		// I
-	}
-	
-	/** Size == 10p */
-	private static void drawN(@NotNull Graphics2D g, int p, int x, int y) {
-		g.fillRect(x, y + 4 * p, 2 * p, 9 * p);					// left column
-		g.fillRect(x + 4 * p, y + 4 * p, 2 * p, 8 * p);		// middle column
-		g.fillRect(x + 8 * p, y + 3 * p, 2 * p, 9 * p);		// right column
-		g.fillRect(x + p, y + 3 * p, 4 * p, 3 * p);			// top row
-		g.fillRect(x + 5 * p, y + 10 * p, 4 * p, 3 * p);		// bottom row
-	}
-	
-	/** Size == 9p */
-	private static void drawE(@NotNull Graphics2D g, int p, int x, int y) {
-		g.fillRect(x, y + 3 * p, 2 * p, 10 * p);				// vertical line
-		g.fillRect(x + 2 * p, y + 3 * p, 7 * p, 2 * p);		// top row
-		g.fillRect(x + 2 * p, y + 7 * p, 4 * p, 2 * p);		// middle row
-		g.fillRect(x + 2 * p, y + 11 * p, 7 * p, 2 * p);		// bottom row
-	}
-	
-	/** Size == 10p */
-	private static void drawS(@NotNull Graphics2D g, int p, int x, int y) {
-		g.fillRect(x + p, y + 3 * p, 9 * p, 2 * p);			// top row
-		g.fillRect(x + p, y + 7 * p, 8 * p, 2 * p);			// middle row
-		g.fillRect(x, y + 11 * p, 9 * p, 2 * p);				// bottom row
-		g.fillRect(x, y + 4 * p, 3 * p, 4 * p);					// left column
-		g.fillRect(x + 7 * p, y + 8 * p, 3 * p, 4 * p);		// right column
-	}
-	
-	/** Size == 10p */
-	private static void drawW(@NotNull Graphics2D g, int p, int x, int y) {
-		g.fillRect(x, y + 3 * p, 2 * p, 9 * p);					// left row
-		g.fillRect(x + 4 * p, y + 6 * p, 2 * p, 3 * p);		// middle row
-		g.fillRect(x + 8 * p, y + 3 * p, 2 * p, 9 * p);		// right row
-		g.fillRect(x + 3 * p, y + 9 * p, 4 * p, 2 * p);		// top column
-		g.fillRect(x, y + 10 * p, 4 * p, 2 * p);				// left middle column
-		g.fillRect(x + 6 * p, y + 10 * p, 4 * p, 2 * p);		// right middle column
-		g.fillRect(x + p, y + 12 * p, 2 * p, p);					// left bottom column
-		g.fillRect(x + 7 * p, y + 12 * p, 2 * p, p);				// right bottom column
-	}
-	
-	/** Size == 10p */
-	private static void drawP(@NotNull Graphics2D g, int p, int x, int y) {
-		g.fillRect(x, y + 3 * p, 3 * p, 10 * p);				// left column
-		g.fillRect(x + 7 * p, y + 4 * p, 3 * p, 4 * p);		// right column
-		g.fillRect(x + 3 * p, y + 3 * p, 6 * p, 2 * p);		// top row
-		g.fillRect(x + 3 * p, y + 7 * p, 6 * p, 2 * p);		// bottom row
-	}
-	
-	/** Size == 10p */
-	private static void drawR(@NotNull Graphics2D g, int p, int x, int y) {
-		drawP(g, p, x, y);														// P base
-		g.fillRect(x + 4 * p, y + 9 * p, 4 * p, p);					// leg's top row
-		g.fillRect(x + 5 * p, y + 10 * p, 4 * p, p);				// leg's middle-top row
-		g.fillRect(x + 6 * p, y + 11 * p, 4 * p, p);				// leg's middle-bottom row
-		g.fillRect(x + 7 * p, y + 12 * p, 3 * p, p);				// leg's bottom row
+	@Override
+	public void dispose() {
+		this.textures.dispose();
+		super.dispose();
 	}
 }

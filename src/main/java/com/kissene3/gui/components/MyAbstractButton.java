@@ -12,8 +12,7 @@ import java.awt.event.MouseEvent;
 
 /** A basic component that implements the interfaces to draw on the screen and to handle mouse inputs. */
 @SuppressWarnings("unused")
-public abstract class MyAbstractButton extends MyComponent implements Clickable, Hoverable, Drawable {
-	
+public abstract class  	MyAbstractButton extends MyComponent implements Clickable, Hoverable, Drawable {
 	/* ---------- FLAGS ---------- */
 	
 	protected boolean isVisible = true;
@@ -38,7 +37,7 @@ public abstract class MyAbstractButton extends MyComponent implements Clickable,
 	/* ---------- @Override Clickable ---------- */
 	
 	@Override
-	public void onClick(@NotNull MouseEvent e) {}
+	public abstract void onClick(@NotNull MouseEvent e);
 	@Override
 	public void onPress(@NotNull MouseEvent e) {}
 	@Override
@@ -53,7 +52,6 @@ public abstract class MyAbstractButton extends MyComponent implements Clickable,
 	}
 	
 	@Override
-	@Contract(pure = true)
 	public boolean isHovered() {
 		return this.isHovered;
 	}
@@ -76,7 +74,6 @@ public abstract class MyAbstractButton extends MyComponent implements Clickable,
 	}
 
 	@Override
-	@Contract(pure = true)
 	public boolean isVisible() {
 		return this.isVisible;
 	}

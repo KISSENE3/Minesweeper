@@ -1,5 +1,7 @@
 package com.kissene3.gui.components;
 
+import com.kissene3.gui.screens.DifficultyScreen;
+import com.kissene3.gui.utilities.MyUtilities;
 import com.kissene3.gui.utilities.MyUtilities.Coordinates;
 import com.kissene3.gui.utilities.MyUtilities.Dimension;
 import com.kissene3.gui.Theme;
@@ -8,6 +10,8 @@ import com.kissene3.gui.interfaces.Drawable;
 import com.kissene3.gui.interfaces.Scrollable;
 import com.kissene3.gui.io.AppLogger;
 import com.kissene3.gui.screens.Screen;
+import com.kissene3.gui.utilities.TextureManager;
+import com.kissene3.gui.utilities.Textures;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
@@ -20,6 +24,7 @@ import java.util.List;
 public class MyScrollList extends MyComponent implements Clickable, Scrollable, Drawable {
 	
 	private final List<MyLabel> items = new ArrayList<>();
+	private final Textures textures;
 	private int scrollOffset = 0;
 	private int selectedIndex = -1;
 	private final int itemHeight;
@@ -31,6 +36,38 @@ public class MyScrollList extends MyComponent implements Clickable, Scrollable, 
 	public MyScrollList(int x, int y, int width, int height, int itemHeight) {
 		super(new Coordinates(x, y), new Dimension(width, height));
 		this.itemHeight = itemHeight;
+		this.textures = new Textures() {
+			@Override
+			protected @NotNull Dimension getAssetDimension(@NotNull Key key) {
+				return switch (key) {
+					case BACKGROUND, CLOSED ->
+							new Dimension(MyScrollList.this.getWidth(), MyScrollList.this.getHeight());
+					default -> throw new UnsupportedOperationException("This should never happen.");
+				};
+			}
+			
+			@Override
+			protected void drawMapping(@NotNull Graphics2D g, @NotNull Key key, @NotNull Dimension dimension) {
+				switch (key) {
+					case BACKGROUND -> drawBackground(
+							g,
+							new MyUtilities.Coordinates(0, 0),
+							dimension,
+							MyScrollList.this.getTheme().background()
+					);
+					case CLOSED -> drawClosed(
+							g,
+							MyScrollList.this.p,
+							new Coordinates(0, 0),
+							dimension,
+							MyScrollList.this.getTheme().backgroundLighterShade(),
+							MyScrollList.this.getTheme().backgroundDarkerShade()
+					);
+					default -> throw new UnsupportedOperationException("This should never happen.");
+				};
+			}
+		};
+		TextureManager.addPack(this.textures);
 	}
 	
 	public void addItem(String text) {
@@ -87,7 +124,7 @@ public class MyScrollList extends MyComponent implements Clickable, Scrollable, 
 	public void draw(@NotNull Graphics2D g) {
 		if (!this.isVisible) return;
 		
-		this.drawBackground(g);
+		g.drawImage(this.textures.getAsset(Textures.Key.BACKGROUND), this.getX(), this.getY(), null);
 		
 		Shape oldClip = g.getClip();
 		
@@ -107,31 +144,7 @@ public class MyScrollList extends MyComponent implements Clickable, Scrollable, 
 		g.translate(-this.getX(), -(this.getY() - this.scrollOffset));
 		g.setClip(oldClip);
 		
-		this.drawShades(g);
-	}
-	
-	protected void drawBackground(@NotNull Graphics2D g) {
-		g.setColor(this.getTheme().background());
-		g.fillRect(this.getX(), this.getY(), this.getWidth(), this.getHeight());
-	}
-	
-	protected void drawShades(@NotNull Graphics2D g) {
-		int reducedW = this.getWidth() - this.p;
-		int reducedW2 = this.getWidth() - this.p2;
-		int reducedH = this.getHeight() - this.p;
-		int reducedH2 = this.getHeight() - this.p2;
-		
-		g.setColor(this.getTheme().backgroundLighterShade());
-		g.fillRect(this.getX(), this.getY(), reducedW, this.p);			// top top-line
-		g.fillRect(this.getX(), this.getY(), reducedW2, this.p2);		// bottom top-line
-		g.fillRect(this.getX(), this.getY(), this.p, reducedH);			// left left-line
-		g.fillRect(this.getX(), this.getY(), this.p2, reducedH2);		// right left-line
-		
-		g.setColor(this.getTheme().backgroundDarkerShade());
-		g.fillRect(this.getX() + reducedW, this.getY() + this.p, this.p, reducedH);		// right right-line
-		g.fillRect(this.getX() + reducedW2, this.getY() + this.p2, this.p, reducedH2);	// left right-line
-		g.fillRect(this.getX() + this.p, this.getY() + reducedH, reducedW, this.p);		// bottom bottom-line
-		g.fillRect(this.getX() + this.p2, this.getY() + reducedH2, reducedW2, this.p);	// top bottom-line
+		g.drawImage(this.textures.getAsset(Textures.Key.CLOSED), this.getX(), this.getY(), null);
 	}
 	
 	@Override
@@ -185,5 +198,13 @@ public class MyScrollList extends MyComponent implements Clickable, Scrollable, 
 	
 	public int getSelectedIndex() {
 		return this.selectedIndex;
+	}
+	
+	@Override
+	public void dispose() {
+		this.textures.dispose();
+		this.parentScreen = null;
+		this.items.clear();
+		super.dispose();
 	}
 }

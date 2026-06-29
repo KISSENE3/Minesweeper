@@ -10,14 +10,21 @@ import org.jetbrains.annotations.Nullable;
 
 @SuppressWarnings("unused")
 public class Settings {
+	/* ---------- ATTRIBUTES ---------- */
 	
-	@SerializedName("cell_size") private String cellSizeKey;
-	@SerializedName("theme") private String themeKey;
-	@SerializedName("difficulty") private String lastDifficultyName;
-	@SerializedName("custom_difficulty") private Difficulty customDifficultyData;
+	@SerializedName("cell_size") protected String cellSizeKey;
+	@SerializedName("theme") protected String themeKey;
+	@SerializedName("difficulty") protected String lastDifficultyName;
+	@SerializedName("custom_difficulty") protected Difficulty customDifficultyData;
 	
-	private transient Theme theme;
-	private transient CellSize cellSize;
+	/* ---------- ATTRIBUTES ---------- */
+	/* ---------- TRANSIENT ATTRIBUTES ---------- */
+	
+	protected transient Theme theme;
+	protected transient CellSize cellSize;
+	
+	/* ---------- TRANSIENT ATTRIBUTES ---------- */
+	/* ---------- CONSTRUCTORS ---------- */
 	
 	public Settings() {
 		this.setCellSize("MEDIUM");
@@ -29,6 +36,9 @@ public class Settings {
 		this.customDifficultyData = null;
 	}
 	
+	/* ---------- CONSTRUCTORS ---------- */
+	/* ---------- GETTERS/SETTERS ---------- */
+	
 	public void setCellSize(@NotNull String key) {
 		try {
 			this.cellSize = CellSize.valueOf(key);
@@ -39,7 +49,7 @@ public class Settings {
 		}
 	}
 	
-	private void setCellSize(@NotNull CellSize cellSize) {
+	protected void setCellSize(@NotNull CellSize cellSize) {
 		this.cellSize = cellSize;
 		this.cellSizeKey = cellSize.name();
 		
@@ -51,16 +61,6 @@ public class Settings {
 			this.setCellSize(this.cellSizeKey != null ? this.cellSizeKey : "MEDIUM");
 		}
 		return this.cellSize;
-	}
-	
-	public void cycleCellSize() {
-		CellSize current = this.getCellSize();
-		CellSize next = switch (current) {
-			case SMALL -> CellSize.MEDIUM;
-			case MEDIUM -> CellSize.BIG;
-			case BIG -> CellSize.SMALL;
-		};
-		this.setCellSize(next);
 	}
 	
 	public void setTheme(@NotNull String key) {
@@ -79,14 +79,6 @@ public class Settings {
 	
 	public @NotNull String getThemeKey() {
 		return this.themeKey != null ? this.themeKey : "light";
-	}
-	
-	public boolean isTheme(@NotNull String key) {
-		return getThemeKey().equalsIgnoreCase(key);
-	}
-	
-	public boolean isCustomDifficulty() {
-		return "custom".equalsIgnoreCase(this.lastDifficultyName);
 	}
 	
 	/**
@@ -122,10 +114,33 @@ public class Settings {
 		return capitalize(this.lastDifficultyName);
 	}
 	
+	public boolean isCustomDifficulty() {
+		return "custom".equalsIgnoreCase(this.lastDifficultyName);
+	}
+	
+	/* ---------- GETTERS/SETTERS ---------- */
+	/* ---------- UTILITIES ---------- */
+	
+	public void cycleCellSize() {
+		CellSize current = this.getCellSize();
+		CellSize next = switch (current) {
+			case SMALL -> CellSize.MEDIUM;
+			case MEDIUM -> CellSize.BIG;
+			case BIG -> CellSize.SMALL;
+		};
+		this.setCellSize(next);
+	}
+	
+	public boolean isTheme(@NotNull String key) {
+		return getThemeKey().equalsIgnoreCase(key);
+	}
+	
 	@Contract(pure = true)
-	private @NotNull String capitalize(@Nullable String s) {
+	protected @NotNull String capitalize(@Nullable String s) {
 		if (s == null || s.isEmpty())
 			return "Easy";
 		return s.substring(0, 1).toUpperCase() + s.substring(1);
 	}
+	
+	/* ---------- UTILITIES ---------- */
 }

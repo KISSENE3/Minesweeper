@@ -5,7 +5,6 @@ import org.jetbrains.annotations.NotNull;
 import java.awt.event.MouseEvent;
 
 /** Interface that must be implemented by components that handles mouse's buttons' inputs. */
-@SuppressWarnings("unused")
 public interface Clickable {
 	
 	/**

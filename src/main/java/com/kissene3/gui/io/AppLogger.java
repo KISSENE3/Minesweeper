@@ -10,11 +10,20 @@ import java.util.logging.*;
 
 @SuppressWarnings("unused")
 public class AppLogger {
+	/* ---------- STATIC FINAL ATTRIBUTES ---------- */
+	
 	private static final Logger LOGGER = Logger.getLogger(AppLogger.class.getName());
 	
+	/* ---------- STATIC FINAL ATTRIBUTES ---------- */
+	/* ---------- CONSTRUCTORS ---------- */
 	static {
 		try {
-			FileHandler fh = new FileHandler(Main.BASE_PATH + "logs" + File.separator + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss")) + ".txt", true);
+			File logDir = new File(Main.BASE_PATH + "logs");
+			if (!logDir.exists()) //noinspection ResultOfMethodCallIgnored
+				logDir.mkdirs();
+			
+			FileHandler fh = new FileHandler(logDir.getAbsolutePath() + File.separator +
+					LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd_HH-mm-ss")) + ".txt", true);
 			
 			fh.setFormatter(new Formatter() {
 				private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -23,7 +32,6 @@ public class AppLogger {
 				public String format(LogRecord record) {
 					return String.format("[%s] [%s] %s%n",
 							record.getInstant().atZone(ZoneId.systemDefault()).format(formatter),
-							//LocalDateTime.now().format(formatter),
 							record.getLevel(),
 							record.getMessage());
 				}
@@ -37,6 +45,9 @@ public class AppLogger {
 		}
 	}
 	
+	/* ---------- CONSTRUCTORS ---------- */
+	/* ---------- STATIC METHODS ---------- */
+	
 	public static void severe(String msg) { LOGGER.severe(msg); }
 	public static void warning(String msg) { LOGGER.warning(msg); }
 	public static void info(String msg) { LOGGER.info(msg); }
@@ -44,4 +55,6 @@ public class AppLogger {
 	public static void fine(String msg) { LOGGER.fine(msg); }
 	public static void finer(String msg) { LOGGER.finer(msg); }
 	public static void finest(String msg) { LOGGER.finest(msg); }
+	
+	/* ---------- STATIC METHODS ---------- */
 }

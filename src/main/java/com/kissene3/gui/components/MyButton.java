@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
+import java.awt.event.MouseEvent;
 
 /** A button personalizable in colors and in the label */
 @SuppressWarnings("unused")
@@ -132,6 +133,12 @@ public class MyButton extends MyAbstractButton {
 	}
 	
 	/* ---------- @Override MyComponent ---------- */
+	/* ---------- @Override Clickable ---------- */
+	
+	@Override
+	public void onClick(@NotNull MouseEvent e) {}
+	
+	/* ---------- @Override Clickable ---------- */
 	/* ---------- @Override Drawable ---------- */
 	
 	@Override

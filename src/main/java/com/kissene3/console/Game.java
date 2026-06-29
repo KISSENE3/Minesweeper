@@ -3,40 +3,42 @@ package com.kissene3.console;
 import com.kissene3.game.*;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Scanner;
 
 
 @SuppressWarnings("unused")
 public class Game {
-	
-	/* ---------- FINAL ATTRIBUTES ---------- */
-	private final Scanner input;
-	private final PrintStream output;
-	@SuppressWarnings("FieldCanBeLocal") private final PrintStream error;
 	/* ---------- FINAL ATTRIBUTES ---------- */
 	
-	/* ---------- ATTRIBUTES ---------- */
-	private Grid grid;
+	protected final Scanner input;
+	protected final PrintStream output;
+	@SuppressWarnings("FieldCanBeLocal") protected final PrintStream error;
+	
+	/* ---------- FINAL ATTRIBUTES ---------- */
 	/* ---------- ATTRIBUTES ---------- */
 	
+	protected Grid<?> grid;
+	
+	/* ---------- ATTRIBUTES ---------- */
 	/* ---------- CONSTRUCTORS ---------- */
-	public Game(@NotNull InputStream inputStream, @NotNull OutputStream outputStream, @NotNull OutputStream errorStream) {
-		this.input = new Scanner(inputStream);
-		this.output = new PrintStream(outputStream);
-		this.error = new PrintStream(errorStream);
+	
+	public Game(@NotNull Scanner scanner, @NotNull PrintStream outputStream, @NotNull PrintStream errorStream) {
+		this.input = scanner;
+		this.output = outputStream;
+		this.error = errorStream;
 	}
-	/* ---------- CONSTRUCTORS ---------- */
 	
+	/* ---------- CONSTRUCTORS ---------- */
 	/* ---------- INITIALIZERS ---------- */
+	
 	public void newGame(@NotNull Difficulty difficulty) {
-		this.grid = new Grid(difficulty.height(), difficulty.width(), difficulty.numMines());
+		this.grid = new Grid<>(difficulty);
+		this.grid.createCells();
 		this.mainLoop();
 	}
 	
-	private void mainLoop() {
+	protected void mainLoop() {
 		while (this.grid.getGameStatus() == Status.RUNNING) {
 			this.printGrid();
 			this.input();
@@ -46,16 +48,32 @@ public class Game {
 			case LOST -> this.lose();
 		}
 	}
-	/* ---------- INITIALIZERS ---------- */
 	
+	/* ---------- INITIALIZERS ---------- */
+	/* ---------- GETTERS ---------- */
+	
+	public Scanner getInputStream() {
+		return this.input;
+	}
+	
+	public PrintStream getOutputStream() {
+		return this.output;
+	}
+	
+	public PrintStream getErrorStream() {
+		return this.error;
+	}
+	
+	/* ---------- GETTERS ---------- */
 	/* ---------- INTERACTORS ---------- */
-	private void printGrid() {
-		this.output.println(grid);
+	
+	protected void printGrid() {
+		this.output.println(this.grid);
 		this.output.println();
 		this.output.flush();
 	}
 	
-	private void input() {
+	protected void input() {
 		label:
 		while (this.grid.getGameStatus() == Status.RUNNING) {
 			this.output.println(ConsoleColor.GREEN + "Commands: [r] Reveal, [f] Flag/Unflag" + ConsoleColor.RESET);
@@ -63,7 +81,12 @@ public class Game {
 			this.output.println(ConsoleColor.GREEN + "e. g. r 5 10" + ConsoleColor.RESET);
 			this.output.print("Enter type of move, row and column: ");
 			this.output.flush();
-			String[] data = this.input.nextLine().trim().split(" ");
+			if (!this.input.hasNextLine()) {
+				this.output.println("\nGame terminated by user. Goodbye!");
+				this.output.flush();
+				System.exit(0);
+			}
+			String[] data = this.input.nextLine().trim().split("\\s+");
 			if (data.length != 3) {
 				this.output.println(ConsoleColor.RED + "Invalid input. Please enter the action and two numbers separated by a space.\n" + ConsoleColor.RESET);
 				this.output.flush();
@@ -109,22 +132,19 @@ public class Game {
 		this.output.flush();
 	}
 	
-	private void win() {
+	protected void win() {
 		this.grid.flagAllMines();
 		this.printGrid();
 		this.output.println(ConsoleColor.GREEN_BRIGHT + "You won!" + ConsoleColor.RESET);
 		this.output.flush();
 	}
 	
-	private void lose() {
+	protected void lose() {
 		this.grid.showAllMines();
 		this.printGrid();
 		this.output.println(ConsoleColor.RED_BRIGHT + "You lost!" + ConsoleColor.RESET);
 		this.output.flush();
 	}
 	
-	public PrintStream getError() {
-		return error;
-	}
 	/* ---------- INTERACTORS ---------- */
 }

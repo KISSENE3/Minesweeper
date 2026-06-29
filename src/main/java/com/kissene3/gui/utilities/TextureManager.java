@@ -8,9 +8,15 @@ import java.util.List;
 import java.lang.ref.WeakReference;
 
 public class TextureManager {
-	private static final List<WeakReference<Textures>> ACTIVE_PACKS = new ArrayList<>();
+	/* ---------- STATIC FINAL ATTRIBUTES ---------- */
+	
+	protected static final List<WeakReference<Textures>> ACTIVE_PACKS = new ArrayList<>();
+	
+	/* ---------- STATIC FINAL ATTRIBUTES ---------- */
+	/* ---------- UTILITIES ---------- */
 	
 	public static void addPack(Textures texture) {
+		ACTIVE_PACKS.removeIf(ref -> ref.get() == null);
 		ACTIVE_PACKS.add(new WeakReference<>(texture));
 	}
 	
@@ -32,4 +38,6 @@ public class TextureManager {
 		});
 		AppLogger.info("All active texture caches invalidated.");
 	}
+	
+	/* ---------- UTILITIES ---------- */
 }

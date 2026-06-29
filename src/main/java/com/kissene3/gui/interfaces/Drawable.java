@@ -1,13 +1,11 @@
 package com.kissene3.gui.interfaces;
 
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 import java.awt.event.MouseEvent;
 
 /** Interface that must be implemented by components that must be drawn to the screen. */
-@SuppressWarnings("unused")
 public interface Drawable {
 	
 	/**
@@ -26,7 +24,6 @@ public interface Drawable {
 	
 	/** Gets the visible state of the component. */
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
-	@Contract(pure = true)
 	boolean isVisible();
 	
 	/** Sets the visible state of the component. */

@@ -41,13 +41,14 @@ public class ScreenManager {
 		AppLogger.info("Pushed screen: " + newScreen.getClass().getSimpleName());
 	}
 	
-	/** Shows the previous {@link Screen} in the stack, destroying the current one. */
+	/** Shows the previous {@link Screen} in the stack, disposing the current one. */
 	public void popScreen() {
 		if (this.screenStack.size() <= 1)
 			return;
 		
-		AppLogger.info("Popped screen: " + this.screenStack.peek().getClass().getSimpleName());
-		this.removeListeners(this.screenStack.pop());
+		Screen toRemove = this.screenStack.pop();
+		AppLogger.info("Popped screen: " + toRemove.getClass().getSimpleName());
+		toRemove.dispose();
 		
 		assert this.screenStack.peek() != null;
 		Screen currentScreen = this.screenStack.peek();
@@ -58,8 +59,9 @@ public class ScreenManager {
 	
 	public void popAll() {
 		while (!this.screenStack.isEmpty()) {
-			this.removeListeners(this.screenStack.peek());
-			this.screenStack.pop();
+			Screen currentScreen = this.screenStack.pop();
+			this.removeListeners(currentScreen);
+			currentScreen.dispose();
 		}
 		AppLogger.info("Popped all screens.");
 	}
