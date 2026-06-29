@@ -4,7 +4,6 @@ import com.kissene3.gui.utilities.MyUtilities.*;
 import com.kissene3.gui.utilities.MyUtilities.Dimension;
 import com.kissene3.gui.utilities.MyUtilities.Rectangle;
 import com.kissene3.gui.interfaces.*;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;

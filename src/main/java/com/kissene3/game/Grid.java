@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.LinkedList;
 import java.util.Random;
 
+@SuppressWarnings("unused")
 public class Grid<C extends Cell<? extends Grid<C>>> {
 	protected final int columns;
 	protected final int rows;

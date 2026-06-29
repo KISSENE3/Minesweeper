@@ -3,6 +3,7 @@ package com.kissene3.game;
 import com.kissene3.console.ConsoleColor;
 import org.jetbrains.annotations.NotNull;
 
+@SuppressWarnings("unused")
 public class Cell<T extends Grid<? extends Cell<T>>> {
 	protected final int row;
 	protected final int column;

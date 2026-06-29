@@ -1,6 +1,5 @@
 package com.kissene3.gui.components;
 
-import com.kissene3.gui.screens.DifficultyScreen;
 import com.kissene3.gui.utilities.MyUtilities;
 import com.kissene3.gui.utilities.MyUtilities.Coordinates;
 import com.kissene3.gui.utilities.MyUtilities.Dimension;
@@ -64,7 +63,7 @@ public class MyScrollList extends MyComponent implements Clickable, Scrollable, 
 							MyScrollList.this.getTheme().backgroundDarkerShade()
 					);
 					default -> throw new UnsupportedOperationException("This should never happen.");
-				};
+				}
 			}
 		};
 		TextureManager.addPack(this.textures);

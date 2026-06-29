@@ -2,7 +2,6 @@ package com.kissene3.gui.screens;
 
 import com.kissene3.game.Difficulty;
 import com.kissene3.game.DifficultyRegistry;
-import com.kissene3.gui.utilities.MyUtilities;
 import com.kissene3.gui.utilities.MyUtilities.Coordinates;
 import com.kissene3.gui.utilities.MyUtilities.Dimension;
 import com.kissene3.gui.utilities.MyUtilities.Rectangle;

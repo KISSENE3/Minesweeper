@@ -6,6 +6,7 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 
 /** Interface that must be implemented by components that must be drawn to the screen. */
+@SuppressWarnings("unused")
 public interface Drawable {
 	
 	/**

@@ -15,6 +15,7 @@ import java.util.Set;
 public class ThemeRegistry {
 	/* ---------- STATIC FINAL ATTRIBUTES ---------- */
 	
+	@SuppressWarnings("unused")
 	protected static final Gson GSON = new GsonBuilder()
 			.registerTypeAdapter(Color.class, (JsonDeserializer<Color>) (json, typeOfT, context) -> {
 				String hex = json.getAsString();
