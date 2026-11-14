@@ -1,4 +1,4 @@
-package com.kissene3.gui;
+package com.kissene3.gui.models;
 
 @SuppressWarnings("unused")
 public enum CellSize {

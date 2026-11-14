@@ -1,11 +1,11 @@
 package com.kissene3.gui.interfaces;
 
-import com.kissene3.gui.utilities.MyUtilities.*;
-import org.jetbrains.annotations.NotNull;
+import com.kissene3.gui.util.*;
+import org.jetbrains.annotations.*;
 
 public interface Component {
 	void setBounds(int x, int y, int width, int height);
-	void setBounds(@NotNull Rectangle bounds);
+	void setBounds(@NotNull MyRectangle bounds);
 	int getX();
 	int getY();
 	int getWidth();

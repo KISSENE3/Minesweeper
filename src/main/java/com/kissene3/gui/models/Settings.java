@@ -1,12 +1,13 @@
-package com.kissene3.gui;
+package com.kissene3.gui.models;
 
-import com.google.gson.annotations.SerializedName;
+import com.google.gson.annotations.*;
 import com.kissene3.game.*;
-import com.kissene3.gui.io.ThemeRegistry;
-import com.kissene3.gui.utilities.TextureManager;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import com.kissene3.gui.io.*;
+import com.kissene3.gui.util.*;
+import com.kissene3.io.DifficultyRegistry;
+import org.jetbrains.annotations.*;
+
+import java.util.List;
 
 @SuppressWarnings("unused")
 public class Settings {
@@ -27,7 +28,8 @@ public class Settings {
 	/* ---------- CONSTRUCTORS ---------- */
 	
 	public Settings() {
-		this.setCellSize("MEDIUM");
+		this.cellSizeKey = "MEDIUM";
+		this.cellSize = null;
 		
 		this.themeKey = "light";
 		this.theme = null;
@@ -47,6 +49,8 @@ public class Settings {
 			this.cellSizeKey = "MEDIUM";
 			this.cellSize = CellSize.MEDIUM;
 		}
+		
+		TextureManager.invalidateAll();
 	}
 	
 	protected void setCellSize(@NotNull CellSize cellSize) {
@@ -82,9 +86,11 @@ public class Settings {
 	}
 	
 	/**
-	 * Gets the current difficulty.<br />
-	 * If is {@code custom}, returns the data saved locally on the settings.<br />
-	 * Otherwise, interrogates the registry to get default difficulties or the ones loaded from the JSON.
+	 * - Gets the current difficulty.
+	 * <br />
+	 * - If is {@code custom}, returns the data saved locally on the settings.
+	 * <br />
+	 * - Otherwise, interrogates the registry to get default difficulties or the ones loaded from the JSON.
 	 */
 	public @NotNull Difficulty getCurrentDifficulty() {
 		if ("custom".equalsIgnoreCase(this.lastDifficultyName)) {
@@ -97,8 +103,9 @@ public class Settings {
 	}
 	
 	/**
-	 * Sets the chosen difficulty.<br />
-	 * If it's custom, we save the Difficulty object in the JSON.
+	 * - Sets the chosen difficulty.
+	 * <br />
+	 * - If it's custom, we save the Difficulty object in the JSON.
 	 */
 	public void setDifficulty(@NotNull String name, @Nullable Difficulty customIfAny) {
 		this.lastDifficultyName = name.toLowerCase();
@@ -129,6 +136,15 @@ public class Settings {
 			case BIG -> CellSize.SMALL;
 		};
 		this.setCellSize(next);
+	}
+	
+	public void cycleTheme() {
+		String current = this.getThemeKey();
+		List<String> names = ThemeRegistry.getAvailableNamesSorted();
+		int currentIndex = names.indexOf(current);
+		int nextIndex = (currentIndex + 1) % names.size();
+		String next = names.get(nextIndex);
+		this.setTheme(next);
 	}
 	
 	public boolean isTheme(@NotNull String key) {

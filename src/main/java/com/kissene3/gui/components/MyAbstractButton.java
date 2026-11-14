@@ -1,13 +1,11 @@
 package com.kissene3.gui.components;
 
-import com.kissene3.gui.utilities.MyUtilities.*;
-import com.kissene3.gui.utilities.MyUtilities.Dimension;
-import com.kissene3.gui.utilities.MyUtilities.Rectangle;
+import com.kissene3.gui.util.*;
 import com.kissene3.gui.interfaces.*;
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.*;
 
 import java.awt.*;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 
 /** A basic component that implements the interfaces to draw on the screen and to handle mouse inputs. */
 @SuppressWarnings("unused")
@@ -24,11 +22,11 @@ public abstract class  	MyAbstractButton extends MyComponent implements Clickabl
 		super(x, y, width, height);
 	}
 	
-	public MyAbstractButton(@NotNull Coordinates topLeft, @NotNull Dimension dimensions) {
+	public MyAbstractButton(@NotNull MyCoordinates topLeft, @NotNull MyDimension dimensions) {
 		super(topLeft, dimensions);
 	}
 	
-	public MyAbstractButton(@NotNull Rectangle bounds) {
+	public MyAbstractButton(@NotNull MyRectangle bounds) {
 		super(bounds);
 	}
 	

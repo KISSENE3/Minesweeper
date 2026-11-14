@@ -3,7 +3,7 @@ plugins {
 }
 
 group = "com.kissene3"
-version = "1.0-SNAPSHOT"
+version = "1.0"
 
 repositories {
 	mavenCentral()
@@ -21,4 +21,13 @@ dependencies {
 
 tasks.test {
 	useJUnitPlatform()
+}
+
+tasks.jar {
+	manifest {
+		attributes["Main-Class"] = "com.kissene3.main.Main"
+	}
+
+	from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
+	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }

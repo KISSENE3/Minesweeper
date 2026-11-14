@@ -1,15 +1,11 @@
 package com.kissene3.gui.components;
 
-import com.kissene3.gui.utilities.MyUtilities.Coordinates;
-import com.kissene3.gui.utilities.MyUtilities.Dimension;
-import com.kissene3.gui.utilities.MyUtilities.Rectangle;
-import com.kissene3.gui.interfaces.Clickable;
-import com.kissene3.gui.interfaces.Drawable;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import com.kissene3.gui.util.*;
+import com.kissene3.gui.interfaces.*;
+import org.jetbrains.annotations.*;
 
 import java.awt.*;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 
 @SuppressWarnings("unused")
 public class MyLabel extends MyComponent implements Drawable, Clickable {
@@ -18,26 +14,26 @@ public class MyLabel extends MyComponent implements Drawable, Clickable {
 	private boolean isVisible = true;
 	
 	public MyLabel(int x, int y, int width, int height) {
-		this(new Rectangle(x, y, width, height), null);
+		this(new MyRectangle(x, y, width, height), null);
 	}
 	
 	public MyLabel(int x, int y, int width, int height, @Nullable String text) {
-		this(new Rectangle(x, y, width, height), text);
+		this(new MyRectangle(x, y, width, height), text);
 	}
 	
-	public MyLabel(@NotNull Coordinates topLeft, @NotNull Dimension dimensions) {
-		this(new Rectangle(topLeft, dimensions), null);
+	public MyLabel(@NotNull MyCoordinates topLeft, @NotNull MyDimension dimensions) {
+		this(new MyRectangle(topLeft, dimensions), null);
 	}
 	
-	public  MyLabel(@NotNull Coordinates topLeft, @NotNull Dimension dimension, @Nullable String text) {
-		this(new Rectangle(topLeft, dimension), text);
+	public  MyLabel(@NotNull MyCoordinates topLeft, @NotNull MyDimension dimension, @Nullable String text) {
+		this(new MyRectangle(topLeft, dimension), text);
 	}
 	
-	public MyLabel(@NotNull Rectangle bounds) {
+	public MyLabel(@NotNull MyRectangle bounds) {
 		this(bounds, null);
 	}
 	
-	public MyLabel(@NotNull Rectangle bounds, @Nullable String text) {
+	public MyLabel(@NotNull MyRectangle bounds, @Nullable String text) {
 		super(bounds);
 		this.text = text;
 		this.font = new Font("SansSerif", Font.PLAIN, 12);
@@ -92,13 +88,42 @@ public class MyLabel extends MyComponent implements Drawable, Clickable {
 			return;
 		
 		g.setFont(this.font);
-		g.setColor(this.isActive ? this.getColorWhenActive(): this.getColorWhenInactive());
+		g.setColor(this.isActive ? this.getColorWhenActive() : this.getColorWhenInactive());
 		FontMetrics fm = g.getFontMetrics();
 		
-		int textWidth = fm.stringWidth(this.text);
-		int textX = this.getX() + (this.getWidth() - textWidth) / 2;
-		int textY = this.getY() + ((this.getHeight() - fm.getHeight()) / 2) + fm.getAscent();
+		String[] words = this.text.split("\\s+");
+		java.util.List<String> lines = new java.util.ArrayList<>();
+		StringBuilder currentLine = new StringBuilder();
 		
-		g.drawString(this.text, textX, textY);
+		for (String word : words) {
+			String testLine = currentLine.isEmpty() ? word : currentLine + " " + word;
+			if (fm.stringWidth(testLine) <= this.getWidth()) {
+				currentLine = new StringBuilder(testLine);
+			} else {
+				if (!currentLine.isEmpty()) {
+					lines.add(currentLine.toString());
+					currentLine = new StringBuilder(word);
+				} else {
+					lines.add(word);
+					currentLine = new StringBuilder();
+				}
+			}
+		}
+		if (!currentLine.isEmpty()) {
+			lines.add(currentLine.toString());
+		}
+		
+		int lineHeight = fm.getHeight();
+		int totalHeight = lines.size() * lineHeight;
+		int startY = this.getY() + ((this.getHeight() - totalHeight) / 2) + fm.getAscent();
+		
+		for (int i = 0; i < lines.size(); i++) {
+			String line = lines.get(i);
+			int textWidth = fm.stringWidth(line);
+			int textX = this.getX() + (this.getWidth() - textWidth) / 2;
+			int textY = startY + (i * lineHeight);
+			
+			g.drawString(line, textX, textY);
+		}
 	}
 }

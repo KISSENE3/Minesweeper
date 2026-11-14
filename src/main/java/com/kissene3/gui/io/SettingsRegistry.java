@@ -1,79 +1,86 @@
 package com.kissene3.gui.io;
 
-import com.google.gson.*;
-import com.kissene3.gui.Settings;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.kissene3.gui.models.Settings;
+import com.kissene3.io.AppLogger;
 import com.kissene3.main.Main;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.*;
-import java.nio.file.*;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 
 public class SettingsRegistry {
 	/* ---------- STATIC FINAL ATTRIBUTES ---------- */
 	
-	protected static final String FILE_PATH = Main.BASE_PATH + "saves" + File.separator + "settings.json";
-	protected static final String TEMP_PATH = FILE_PATH + ".tmp";
+	protected static final Path FILE_PATH = Main.BASE_PATH.resolve("saves", "settings.json");
+	protected static final Path TEMP_PATH = Main.BASE_PATH.resolve("saves", "settings.json.tmp");
 	protected static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 	
 	/* ---------- STATIC FINAL ATTRIBUTES ---------- */
 	/* ---------- I/O METHODS ---------- */
 	
 	/**
-	 * Only saves the differences from the default.<br />
-	 * If there are no differences deletes the file.
+	 * - Only saves the differences from the default.
+	 * <br />
+	 * - If there are no differences deletes the file.
 	 */
 	public static void save(Settings settings) {
 		JsonObject delta = getDelta(settings);
 		
-		File finalFile = new File(FILE_PATH);
-		
 		if (delta.isEmpty()) {
-			if (finalFile.exists())
-				//noinspection ResultOfMethodCallIgnored
-				finalFile.delete();
+			try {
+				if (Files.exists(FILE_PATH))
+					Files.delete(FILE_PATH);
+			} catch (IOException e) {
+				AppLogger.severe("Error deleting empty settings file: " + e.getMessage());
+			}
 			return;
 		}
 		
-		File tempFile = new File(TEMP_PATH);
-		if (finalFile.getParentFile() != null)
-			//noinspection ResultOfMethodCallIgnored
-			finalFile.getParentFile().mkdirs();
+		try {
+			if(FILE_PATH.getParent() != null)
+				Files.createDirectories(FILE_PATH.getParent());
+		} catch (IOException e) {
+			AppLogger.severe("Error creating directories for settings: " + e.getMessage());
+			return;
+		}
 		
-		try (Writer writer = new FileWriter(tempFile)) {
+		try (Writer writer = Files.newBufferedWriter(TEMP_PATH, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
 			GSON.toJson(delta, writer);
-			writer.flush();
 		} catch (IOException e) {
 			AppLogger.severe("Error writing temp file: " + e.getMessage());
 			return;
 		}
 		
 		try {
-			Files.move(tempFile.toPath(), finalFile.toPath(),
-					StandardCopyOption.REPLACE_EXISTING,
-					StandardCopyOption.ATOMIC_MOVE);
+			Files.move(TEMP_PATH, FILE_PATH, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
 		} catch (IOException e) {
-			try {
-				Files.move(tempFile.toPath(), finalFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-			} catch (IOException ex) {
-				AppLogger.severe("Error moving temp file to final location: " + ex.getMessage());
-			}
+			AppLogger.severe("Error moving temp file to final location: " + e.getMessage());
 		}
 		
 		AppLogger.info("Settings saved.");
 	}
 	
 	/**
-	 * Loads the settings.<br />
-	 * If the file doesn't exist or is empty {}, default values are given.
+	 * - Loads the settings.
+	 * <br />
+	 * - If the file doesn't exist or is empty {@code {}}, default values are given.
 	 */
 	public static @NotNull Settings load() {
-		File file = new File(FILE_PATH);
-		if (!file.exists()) {
+		if (!Files.exists(FILE_PATH)) {
 			AppLogger.info("Settings file not found, using default.");
 			return new Settings();
 		}
 		
-		try (Reader reader = new FileReader(file)) {
+		try (Reader reader = Files.newBufferedReader(FILE_PATH, StandardCharsets.UTF_8)) {
 			Settings loaded = GSON.fromJson(reader, Settings.class);
 			if (loaded != null) {
 				AppLogger.info("Settings loaded.");
@@ -83,7 +90,7 @@ public class SettingsRegistry {
 				return new Settings();
 			}
 			
-		} catch (Exception e) {
+		} catch (IOException e) {
 			AppLogger.warning("Error loading settings (using default): " + e.getMessage());
 			return new Settings();
 		}
@@ -93,7 +100,7 @@ public class SettingsRegistry {
 	/* ---------- UTILITIES ---------- */
 	
 	/**
-	 * Compares entered settings with the default ones and returns
+	 * -Compares entered settings with the default ones and returns
 	 * a {@code JsonObject} containing the differences.
 	 */
 	protected static @NotNull JsonObject getDelta(@NotNull Settings current) {
@@ -105,7 +112,7 @@ public class SettingsRegistry {
 			json.addProperty("theme", current.getThemeKey());
 		}
 		
-		// CellBrutta Size
+		// Cell Size
 		if (current.getCellSize() != def.getCellSize()) {
 			json.addProperty("cell_size", current.getCellSize().name());
 		}

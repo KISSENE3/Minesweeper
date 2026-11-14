@@ -1,7 +1,7 @@
 package com.kissene3.game;
 
-import com.kissene3.console.ConsoleColor;
-import org.jetbrains.annotations.NotNull;
+import com.kissene3.cli.*;
+import org.jetbrains.annotations.*;
 
 @SuppressWarnings("unused")
 public class Cell<T extends Grid<? extends Cell<T>>> {
@@ -21,6 +21,19 @@ public class Cell<T extends Grid<? extends Cell<T>>> {
 		this.display = CellDisplay.HIDDEN;
 		this.isRevealed = false;
 		this.isFlagged = false;
+		this.hasExploded = false;
+	}
+	
+	public Cell(int row, int column, @NotNull T grid, int bitState)  {
+		this.row = row;
+		this.column = column;
+		this.grid = grid;
+		this.isRevealed = (bitState & 4) != 0;
+		this.isFlagged = (bitState & 2) != 0;
+		if ((bitState & 1) != 0)
+			this.display = CellDisplay.MINE;
+		else
+			this.display = CellDisplay.HIDDEN;
 		this.hasExploded = false;
 	}
 	
@@ -75,7 +88,8 @@ public class Cell<T extends Grid<? extends Cell<T>>> {
 	}
 	
 	public void checkNear() {
-		if (this.display == CellDisplay.MINE) return;
+		if (this.display == CellDisplay.MINE)
+			return;
 		int count = 0;
 		for (int r = -1; r <= 1; r++) {
 			for (int c = -1; c <= 1; c++) {
@@ -101,6 +115,16 @@ public class Cell<T extends Grid<? extends Cell<T>>> {
 		};
 	}
 	
+	public byte getBitState() {
+		byte state = 0;
+		
+		if (this.isMine())     state |= 1;
+		if (this.isFlagged())  state |= 2;
+		if (this.isRevealed()) state |= 4;
+		
+		return state;
+	}
+	
 	@Override
 	public @NotNull String toString() {
 		if (this.isFlagged)
@@ -115,7 +139,7 @@ public class Cell<T extends Grid<? extends Cell<T>>> {
 			case FIVE  -> ConsoleColor.YELLOW + " 5 " + ConsoleColor.RESET;
 			case SIX   -> ConsoleColor.CYAN + " 6 " + ConsoleColor.RESET;
 			case SEVEN -> ConsoleColor.BLACK + " 7 " + ConsoleColor.RESET;
-			case EIGHT -> ConsoleColor.GRAY + " 8 " + ConsoleColor.RESET;
+			case EIGHT -> ConsoleColor.BLACK_BRIGHT + " 8 " + ConsoleColor.RESET;
 			case MINE  -> (this.hasExploded ? ConsoleColor.MINE_EXPLODED : "") + " * " + ConsoleColor.RESET;
 			case ZERO  -> "   ";
 			default    -> " " + this.display.getSymbol() + " ";

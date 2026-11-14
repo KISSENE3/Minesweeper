@@ -1,11 +1,15 @@
-package com.kissene3.console;
+package com.kissene3.cli;
 
 import com.kissene3.game.*;
-import org.jetbrains.annotations.NotNull;
+import com.kissene3.game.Timer;
+import com.kissene3.io.AppLogger;
+import com.kissene3.io.Save;
+import com.kissene3.main.Main;
+import org.jetbrains.annotations.*;
 
-import java.io.PrintStream;
-import java.util.Scanner;
-
+import java.io.*;
+import java.math.BigInteger;
+import java.util.*;
 
 @SuppressWarnings("unused")
 public class Game {
@@ -19,6 +23,8 @@ public class Game {
 	/* ---------- ATTRIBUTES ---------- */
 	
 	protected Grid<?> grid;
+	protected long startTime;
+	protected Timer timer;
 	
 	/* ---------- ATTRIBUTES ---------- */
 	/* ---------- CONSTRUCTORS ---------- */
@@ -33,13 +39,26 @@ public class Game {
 	/* ---------- INITIALIZERS ---------- */
 	
 	public void newGame(@NotNull Difficulty difficulty) {
+		AppLogger.info("Game started with grid: " + difficulty.width() + " * " + difficulty.height() + " | Mines: " + difficulty.numMines());
 		this.grid = new Grid<>(difficulty);
 		this.grid.createCells();
+		this.timer = new Timer();
+		this.startTime = System.currentTimeMillis();
+		this.mainLoop();
+	}
+	
+	public void loadGame(Grid<?> grid, long thirties) {
+		this.grid = grid;
+		this.grid.loadCellsFromState();
+		this.timer = new Timer(thirties);
+		this.startTime = System.currentTimeMillis() - (thirties * 1000L / 30L);
 		this.mainLoop();
 	}
 	
 	protected void mainLoop() {
 		while (this.grid.getGameStatus() == Status.RUNNING) {
+			this.output.println(Main.useAnsi() ? "\033[3J\033[H" : "\n\n\n\n\n\n");
+			this.output.flush();
 			this.printGrid();
 			this.input();
 		}
@@ -68,6 +87,9 @@ public class Game {
 	/* ---------- INTERACTORS ---------- */
 	
 	protected void printGrid() {
+		long elapsedMillis = System.currentTimeMillis() - this.startTime;
+		this.timer.setThirties(elapsedMillis * 30L / 1000L);
+		this.output.print(ConsoleColor.YELLOW + "Elapsed time: " + this.timer + ConsoleColor.RESET);
 		this.output.println(this.grid);
 		this.output.println();
 		this.output.flush();
@@ -76,17 +98,42 @@ public class Game {
 	protected void input() {
 		label:
 		while (this.grid.getGameStatus() == Status.RUNNING) {
-			this.output.println(ConsoleColor.GREEN + "Commands: [r] Reveal, [f] Flag/Unflag" + ConsoleColor.RESET);
-			this.output.printf("%sMove -> [r/f] [0-%d] [0-%d]%n%s", ConsoleColor.GREEN, this.grid.getColumns() - 1, this.grid.getRows() - 1, ConsoleColor.RESET);
+			this.output.println(ConsoleColor.GREEN + "Commands: [r] Reveal, [f] Flag/Unflag, [save] Save & Exit, [quit] Exit without saving" + ConsoleColor.RESET);
+			this.output.printf("%sMove -> [r/f] [0-%d] [0-%d]%s%n", ConsoleColor.GREEN, this.grid.getColumns() - 1, this.grid.getRows() - 1, ConsoleColor.RESET);
 			this.output.println(ConsoleColor.GREEN + "e. g. r 5 10" + ConsoleColor.RESET);
-			this.output.print("Enter type of move, row and column: ");
+			this.output.print("Enter your move: ");
 			this.output.flush();
-			if (!this.input.hasNextLine()) {
-				this.output.println("\nGame terminated by user. Goodbye!");
-				this.output.flush();
-				System.exit(0);
+			this.isDisconnected();
+			String line = this.input.nextLine().trim().toLowerCase();
+			switch (line) {
+				case "" -> {
+					continue;
+				}
+				case "quit", "exit" -> {
+					this.output.printf(ConsoleColor.CYAN + "Are you sure you want to quit? (Y/N): " + ConsoleColor.RESET);
+					this.output.flush();
+					this.isDisconnected();
+					String confirm = this.input.nextLine().trim().toLowerCase();
+					if (confirm.equals("y") || confirm.equals("yes") || confirm.equals("t") || confirm.equals("true")) {
+						this.quit();
+					} else
+						continue;
+				}
+				case "save" -> {
+					long elapsedMillis = System.currentTimeMillis() - this.startTime;
+					this.timer.setThirties(elapsedMillis * 30L / 1000L);
+					
+					BigInteger gameData = Save.convertGameToBigInteger(this.grid, this.timer.getThirties());
+					Save.saveFile(gameData);
+					
+					this.output.println(ConsoleColor.YELLOW + "Saved with elapsed time: " + this.timer + ConsoleColor.RESET);
+					this.output.println(ConsoleColor.BLUE_BRIGHT + "Game saved successfully! Goodbye" + ConsoleColor.RESET);
+					this.output.flush();
+					AppLogger.info("Game saved successfully!");
+					System.exit(0);
+				}
 			}
-			String[] data = this.input.nextLine().trim().split("\\s+");
+			String[] data = line.split("\\s+");
 			if (data.length != 3) {
 				this.output.println(ConsoleColor.RED + "Invalid input. Please enter the action and two numbers separated by a space.\n" + ConsoleColor.RESET);
 				this.output.flush();
@@ -133,18 +180,31 @@ public class Game {
 	}
 	
 	protected void win() {
-		this.grid.flagAllMines();
 		this.printGrid();
 		this.output.println(ConsoleColor.GREEN_BRIGHT + "You won!" + ConsoleColor.RESET);
 		this.output.flush();
+		AppLogger.info("Game finished, won");
 	}
 	
 	protected void lose() {
-		this.grid.showAllMines();
 		this.printGrid();
 		this.output.println(ConsoleColor.RED_BRIGHT + "You lost!" + ConsoleColor.RESET);
 		this.output.flush();
+		AppLogger.info("Game finished, lost");
 	}
 	
 	/* ---------- INTERACTORS ---------- */
+	
+	protected void isDisconnected() {
+		if (!this.input.hasNextLine()) {
+			this.quit();
+		}
+	}
+	
+	protected void quit() {
+		this.output.println(ConsoleColor.YELLOW_BRIGHT + "\nGame terminated by user. Goodbye!" + ConsoleColor.RESET);
+		this.output.flush();
+		AppLogger.info("Quitting...");
+		System.exit(0);
+	}
 }

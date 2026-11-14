@@ -1,27 +1,23 @@
-package com.kissene3.gui;
+package com.kissene3.gui.game;
 
-import com.kissene3.game.Cell;
-import com.kissene3.game.Status;
-import com.kissene3.gui.interfaces.Clickable;
+import com.kissene3.game.*;
+import com.kissene3.gui.models.Theme;
+import com.kissene3.gui.interfaces.*;
 import com.kissene3.gui.interfaces.Component;
-import com.kissene3.gui.interfaces.Drawable;
-import com.kissene3.gui.interfaces.Hoverable;
-import com.kissene3.gui.utilities.MyUtilities.Dimension;
-import com.kissene3.gui.utilities.MyUtilities.Rectangle;
-import com.kissene3.gui.utilities.Textures;
-import org.jetbrains.annotations.NotNull;
+import com.kissene3.gui.util.*;
+import org.jetbrains.annotations.*;
 
 import java.awt.*;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 
 import static java.util.Objects.requireNonNull;
 
-public class GUICell extends Cell<GUIGrid> implements Component, Clickable, Hoverable, Drawable {
+public class GuiCell extends Cell<GuiGrid> implements Component, Clickable, Hoverable, Drawable {
 	/* ---------- ATTRIBUTES ---------- */
 	
 	private final Textures textures;
 	
-	private Rectangle bounds;
+	private MyRectangle bounds;
 	private boolean isActive;
 	private boolean isVisible;
 	private boolean isHovered;
@@ -29,10 +25,18 @@ public class GUICell extends Cell<GUIGrid> implements Component, Clickable, Hove
 	/* ---------- ATTRIBUTES ---------- */
 	/* ---------- CONSTRUCTORS ---------- */
 	
-	public GUICell(int row, int column, @NotNull GUIGrid grid, int x, int y) {
+	public GuiCell(int row, int column, @NotNull GuiGrid grid, int x, int y) {
 		super(row, column, grid);
 		this.textures = grid.getTextures();
-		this.bounds = new Rectangle(x, y, grid.getCellSize(), grid.getCellSize());
+		this.bounds = new MyRectangle(x, y, grid.getCellSize(), grid.getCellSize());
+		this.isActive = true;
+		this.isVisible = true;
+	}
+	
+	public GuiCell(int row, int column, @NotNull GuiGrid grid, int x, int y, int bitState) {
+		super(row, column, grid, bitState);
+		this.textures = grid.getTextures();
+		this.bounds = new MyRectangle(x, y, grid.getCellSize(), grid.getCellSize());
 		this.isActive = true;
 		this.isVisible = true;
 	}
@@ -49,7 +53,7 @@ public class GUICell extends Cell<GUIGrid> implements Component, Clickable, Hove
 	}
 	
 	public void setSize(int size) {
-		this.setBounds(this.bounds.withDimensions(new Dimension(size, size)));
+		this.setBounds(this.bounds.withDimensions(new MyDimension(size, size)));
 	}
 	
 	/* ---------- SETTERS ---------- */
@@ -57,11 +61,11 @@ public class GUICell extends Cell<GUIGrid> implements Component, Clickable, Hove
 	
 	@Override
 	public void setBounds(int x, int y, int width, int height) {
-		this.setBounds(new Rectangle(x, y, width, height));
+		this.setBounds(new MyRectangle(x, y, width, height));
 	}
 	
 	@Override
-	public void setBounds(@NotNull Rectangle bounds) {
+	public void setBounds(@NotNull MyRectangle bounds) {
 		this.bounds = requireNonNull(bounds);
 	}
 	

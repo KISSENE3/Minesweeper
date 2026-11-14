@@ -1,88 +1,89 @@
 package com.kissene3.gui.components;
 
-import com.kissene3.gui.utilities.MyUtilities.Coordinates;
-import com.kissene3.gui.utilities.MyUtilities.Dimension;
-import com.kissene3.gui.utilities.MyUtilities.Rectangle;
-import com.kissene3.gui.Theme;
-import com.kissene3.gui.io.AppLogger;
-import com.kissene3.gui.utilities.TextureManager;
-import com.kissene3.gui.utilities.Textures;
+import com.kissene3.gui.models.Theme;
+import com.kissene3.gui.util.*;
+import com.kissene3.gui.util.*;
+import com.kissene3.io.AppLogger;
 import org.jetbrains.annotations.*;
 
 import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
+import java.awt.event.*;
+import java.awt.image.*;
 
 @SuppressWarnings("unused")
 public abstract class MinesweeperButton extends MyAbstractButton {
-	/* ---------- FINAL ATTRIBUTES ---------- */
-	
-	private final Textures textures;
-	
-	/* ---------- FINAL ATTRIBUTES ---------- */
 	/* ---------- ATTRIBUTES ---------- */
 	
-	private String label;
-	private Font font;
-	private boolean pressed = false;
+	protected Textures textures;
+	protected String label;
+	protected Font font;
+	protected boolean pressed = false;
 	
 	/* ---------- ATTRIBUTES ---------- */
 	/* ---------- CONSTRUCTORS ---------- */
 	
 	public MinesweeperButton(int x, int y, int width, int height) {
-		this(new Rectangle(x, y, width, height), null);
+		this(new MyRectangle(x, y, width, height), null);
 	}
 	
 	public MinesweeperButton(int x, int y, int width, int height, @Nullable String label) {
-		this(new Rectangle(x, y, width, height), label);
+		this(new MyRectangle(x, y, width, height), label);
 	}
 	
-	public MinesweeperButton(@NotNull Coordinates topLeft, @NotNull Dimension dimensions) {
-		this(new Rectangle(topLeft, dimensions), null);
+	public MinesweeperButton(@NotNull MyCoordinates topLeft, @NotNull MyDimension dimensions) {
+		this(new MyRectangle(topLeft, dimensions), null);
 	}
 	
-	public MinesweeperButton(@NotNull Coordinates topLeft, @NotNull Dimension dimensions, @Nullable String label) {
-		this(new Rectangle(topLeft, dimensions), label);
+	public MinesweeperButton(@NotNull MyCoordinates topLeft, @NotNull MyDimension dimensions, @Nullable String label) {
+		this(new MyRectangle(topLeft, dimensions), label);
 	}
 	
-	public MinesweeperButton(@NotNull Rectangle bounds) {
+	public MinesweeperButton(@NotNull MyRectangle bounds) {
 		this(bounds, null);
 	}
 	
-	public MinesweeperButton(@NotNull Rectangle bounds, @Nullable String label) {
+	public MinesweeperButton(@NotNull MyRectangle bounds, @Nullable String label) {
 		super(bounds);
 		this.label = label;
 		this.font = new Font("Monospaced", Font.BOLD, (int)(this.getHeight() * 0.4));
-		this.textures = new Textures() {
+		this.textures = this.createTexture();
+		TextureManager.addPack(this.textures);
+	}
+	
+	/* ---------- CONSTRUCTORS ---------- */
+	/* ---------- GETTERS/SETTERS ---------- */
+	
+	protected Textures createTexture() {
+		return new Textures() {
 			@Override
-			protected @NotNull Dimension getAssetDimension(@NotNull Key key) {
+			protected @NotNull MyDimension getAssetDimension(@NotNull Key key) {
 				return switch (key) {
 					case BACKGROUND, CLOSED, REVEALED ->
-							new Dimension(MinesweeperButton.this.getWidth(), MinesweeperButton.this.getHeight());
+							new MyDimension(MinesweeperButton.this.getWidth(), MinesweeperButton.this.getHeight());
 					default -> throw new UnsupportedOperationException("This should never happen.");
 				};
 			}
 			
 			@Override
-			protected void drawMapping(@NotNull Graphics2D g, @NotNull Key key, @NotNull Dimension dimension) {
+			protected void drawMapping(@NotNull Graphics2D g, @NotNull Key key, @NotNull MyDimension dimension) {
 				switch (key) {
 					case BACKGROUND -> this.drawBackground(
 							g,
-							new Coordinates(0, 0),
+							new MyCoordinates(0, 0),
 							dimension,
 							MinesweeperButton.this.getTheme().background()
 					);
 					case REVEALED -> this.drawRevealed(
 							g,
 							MinesweeperButton.this.getP(),
-							new Coordinates(0, 0),
+							new MyCoordinates(0, 0),
 							dimension,
 							MinesweeperButton.this.getTheme().border()
 					);
 					case CLOSED -> this.drawClosed(
 							g,
 							MinesweeperButton.this.getP(),
-							new Coordinates(0, 0),
+							new MyCoordinates(0, 0),
 							dimension,
 							MinesweeperButton.this.getTheme().backgroundLighterShade(),
 							MinesweeperButton.this.getTheme().backgroundDarkerShade()
@@ -91,11 +92,7 @@ public abstract class MinesweeperButton extends MyAbstractButton {
 				}
 			}
 		};
-		TextureManager.addPack(this.textures);
 	}
-	
-	/* ---------- CONSTRUCTORS ---------- */
-	/* ---------- GETTERS/SETTERS ---------- */
 	
 	public void setLabel(@Nullable String label) {
 		this.label = label;
@@ -119,7 +116,7 @@ public abstract class MinesweeperButton extends MyAbstractButton {
 	
 	public abstract Theme getTheme();
 	
-	private @NotNull BufferedImage getTexture(@NotNull Textures.Key key) {
+	protected @NotNull BufferedImage getTexture(@NotNull Textures.Key key) {
 		return this.textures.getAsset(key);
 	}
 	

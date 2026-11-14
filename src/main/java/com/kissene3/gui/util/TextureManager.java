@@ -1,11 +1,10 @@
-package com.kissene3.gui.utilities;
+package com.kissene3.gui.util;
 
 
-import com.kissene3.gui.io.AppLogger;
+import com.kissene3.io.AppLogger;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.lang.ref.WeakReference;
+import java.util.*;
+import java.lang.ref.*;
 
 public class TextureManager {
 	/* ---------- STATIC FINAL ATTRIBUTES ---------- */

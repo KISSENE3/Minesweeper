@@ -1,24 +1,31 @@
-package com.kissene3.game;
+package com.kissene3.io;
 
 import com.google.gson.Gson;
-import com.kissene3.gui.io.AppLogger;
+import com.kissene3.game.Difficulty;
 import com.kissene3.main.Main;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Unmodifiable;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Stream;
 
 public class DifficultyRegistry {
 	/* ---------- STATIC FINAL ATTRIBUTES ---------- */
 	
 	protected static final Gson GSON = new Gson();
 	
-	/**
-	 * Map that associates difficulty name with file path.<br />
-	 * {@code true} is internal (from Resources) while {@code false} is external.
+ 	/**
+	 * - Map that associates difficulty name with file path.
+	 * <br />
+	 * - {@code true} is internal (from Resources) while {@code false} is external.
 	 */
 	protected static final Map<String, Boolean> CACHE = new HashMap<>();
-	protected static final String EXTERNAL_DIR = Main.BASE_PATH + "difficulties" + File.separator;
+	protected static final Path EXTERNAL_DIR = Main.BASE_PATH.resolve("difficulties");
 	protected static final String INTERNAL_DIR = "/difficulties/";
 	protected static final String[] DEFAULTS = {"easy", "medium", "hard"};
 	
@@ -30,7 +37,7 @@ public class DifficultyRegistry {
 	}
 	
 	/**
-	 * Scans every file and populate the {@code Map}.
+	 * - Scans every file and populate the {@code Map}.
 	 */
 	protected static void init() {
 		CACHE.clear();
@@ -47,25 +54,25 @@ public class DifficultyRegistry {
 		}
 		
 		// 2. Overrides or adds from external files.
-		File dir = new File(EXTERNAL_DIR);
-		if (!dir.exists() || !dir.isDirectory())
+		if (!Files.isDirectory(EXTERNAL_DIR))
 			return;
 		
-		File[] files = dir.listFiles((_, name) -> name.endsWith(".json"));
-		if (files == null)
-			return;
-		
-		for (File file : files) {
-			String name = file.getName().replace(".json", "").toLowerCase();
-			Difficulty custom = loadFromFile(file);
-			
-			// VALIDATION: Adds to the Map only if it's correct.
-			if (isValid(custom)) {
-				CACHE.put(name, false);
-				AppLogger.info("Loaded difficulty: " + name);
-			} else {
-				AppLogger.warning("Failed to load difficulty: " + name);
-			}
+		try (Stream<Path> stream = Files.list(EXTERNAL_DIR)) {
+			stream.filter(Files::isRegularFile)
+				  .filter(p -> p.getFileName().toString().toLowerCase().endsWith(".json"))
+				  .forEach(file -> {
+					  String fileName = file.getFileName().toString();
+					  String name = fileName.substring(0, fileName.length() - 5).toLowerCase();
+					  Difficulty custom = loadFromFile(file);
+					  
+					  if (isValid(custom)) {
+						  CACHE.put(name, false);
+						  AppLogger.info("Loaded difficulty: " + name);
+					  } else
+						  AppLogger.warning("Failed to load difficulty: " + name);
+				  });
+		} catch (IOException e) {
+			AppLogger.warning("Failed to scan external difficulties directory: " + e.getMessage());
 		}
 	}
 	
@@ -76,7 +83,7 @@ public class DifficultyRegistry {
 		String key = CACHE.containsKey(name.toLowerCase()) ? name.toLowerCase() : "easy";
 		Boolean isInternal = CACHE.getOrDefault(key, true);
 		
-		Difficulty d = isInternal ? loadFromResources(key) : loadFromFile(new File(EXTERNAL_DIR + key + ".json"));
+		Difficulty d = isInternal ? loadFromResources(key) : loadFromFile(EXTERNAL_DIR.resolve(key + ".json"));
 		
 		if (!isValid(d)) {
 			return new Difficulty(9, 9, 10);
@@ -90,21 +97,21 @@ public class DifficultyRegistry {
 	}
 	
 	public static @NotNull @Unmodifiable List<String> getAvailableNamesSorted() {
-		return CACHE.keySet().stream().sorted().toList();
+		return getAvailableNames().stream().sorted().toList();
 	}
 
 	/* ---------- GETTERS ---------- */
 	/* ---------- HELPER METHODS ---------- */
 	
 	protected static boolean isValid(@Nullable Difficulty d) {
-		return d != null && d.width() * d.height() - 9 > 0;
+		return d != null;
 	}
 	
-	protected static @Nullable Difficulty loadFromFile(@NotNull File file) {
-		try (Reader r = new FileReader(file)) {
+	protected static @Nullable Difficulty loadFromFile(@NotNull Path file) {
+		try (Reader r = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
 			return GSON.fromJson(r, Difficulty.class);
 		} catch (Exception e) {
-			AppLogger.warning("Failed to load difficulty: " + file.getName() + ".\n" + e.getMessage());
+			AppLogger.warning("Failed to load difficulty: " + file.getFileName() + ".\n" + e.getMessage());
 			return null;
 		}
 	}

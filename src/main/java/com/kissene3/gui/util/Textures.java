@@ -1,17 +1,12 @@
-package com.kissene3.gui.utilities;
+package com.kissene3.gui.util;
 
-import com.kissene3.gui.io.AppLogger;
-import com.kissene3.gui.utilities.MyUtilities.Coordinates;
-import com.kissene3.gui.utilities.MyUtilities.Dimension;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import com.kissene3.io.AppLogger;
+import org.jetbrains.annotations.*;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.util.HashMap;
-import java.util.Map;
+import java.awt.image.*;
+import java.util.*;
 
-@SuppressWarnings("unused")
 public abstract class Textures {
 	/* ---------- STATIC FINAL ATTRIBUTES ---------- */
 	
@@ -23,15 +18,33 @@ public abstract class Textures {
 		FOUR, FIVE, SIX,
 		SEVEN, EIGHT, NINE,
 		M, I, N, E, S, W, P, R,
-		MINESWEEPER, TITLE
+		MINESWEEPER, TITLE,
+		SMILEY_BASE, SMILEY_HAPPY,
+		SMILEY_OOH, SMILEY_DEAD,
+		SMILEY_COOL, PAUSE
 	}
 	
 	/* ---------- STATIC FINAL ATTRIBUTES ---------- */
 	/* ---------- FINAL ATTRIBUTES ---------- */
 	
 	protected final Map<Key, BufferedImage> CACHE = new HashMap<>();
+	protected final String name;
 	
 	/* ---------- FINAL ATTRIBUTES ---------- */
+	/* ---------- CONSTRUCTORS ---------- */
+	
+	public Textures() {
+		this(null);
+	}
+	
+	public Textures(@Nullable String name) {
+		if (name == null)
+			this.name = this.resolveName();
+		else
+			this.name = name;
+	}
+	
+	/* ---------- CONSTRUCTORS ---------- */
 	/* ---------- GETTERS ---------- */
 	
 	public BufferedImage getAsset(Key key) {
@@ -41,18 +54,37 @@ public abstract class Textures {
 	/* ---------- GETTERS ---------- */
 	/* ---------- UTILITIES ---------- */
 	
+	protected String resolveName() {
+		Class<?> clazz = this.getClass();
+		
+		if (clazz.isAnonymousClass()) {
+			Class<?> enclosing = clazz.getEnclosingClass();
+			if (enclosing != null) {
+				return enclosing.getSimpleName();
+			}
+		}
+		
+		String simpleName = clazz.getSimpleName();
+		return simpleName.isEmpty() ? "UnknownTextures" : simpleName;
+	}
+	
 	public void clear() {
-		AppLogger.info(CACHE.size() + " graphics cache invalidated.");
+		AppLogger.info(CACHE.size() + " graphics cache invalidated for " + this.name + ".");
+		CACHE.values().forEach(BufferedImage::flush);
 		CACHE.clear();
 	}
 	
 	public void removeKey(@NotNull Key key) {
-		CACHE.remove(key);
+		BufferedImage img = CACHE.remove(key);
+		if (img != null) {
+			img.flush();
+		}
 	}
 	
+	@SuppressWarnings("unused")
 	public void removeKeys(@NotNull Key @NotNull ... keys) {
 		for (Key key : keys)
-			CACHE.remove(key);
+			this.removeKey(key);
 	}
 	
 	public void dispose() {
@@ -61,7 +93,7 @@ public abstract class Textures {
 	}
 	
 	protected @NotNull BufferedImage renderAsset(Key key) {
-		Dimension d = this.getAssetDimension(key);
+		MyDimension d = this.getAssetDimension(key);
 		
 		GraphicsConfiguration config = GraphicsEnvironment.getLocalGraphicsEnvironment()
 				.getDefaultScreenDevice().getDefaultConfiguration();
@@ -77,13 +109,13 @@ public abstract class Textures {
 	/* ---------- UTILITIES ---------- */
 	/* ---------- ABSTRACT METHODS ---------- */
 	
-	protected abstract @NotNull Dimension getAssetDimension(@NotNull Key key);
-	protected abstract void drawMapping(@NotNull Graphics2D g, @NotNull Key key, @NotNull Dimension dimension);
+	protected abstract @NotNull MyDimension getAssetDimension(@NotNull Key key);
+	protected abstract void drawMapping(@NotNull Graphics2D g, @NotNull Key key, @NotNull MyDimension dimension);
 	
 	/* ---------- ABSTRACT METHODS ---------- */
 	/* ---------- TEXTURES ---------- */
 	
-	protected void drawBackground(@NotNull Graphics2D g, @NotNull Coordinates topLeft, @NotNull Dimension dimension, @Nullable Color color) {
+	protected void drawBackground(@NotNull Graphics2D g, @NotNull MyCoordinates topLeft, @NotNull MyDimension dimension, @Nullable Color color) {
 		Color oldColor = g.getColor();
 		if (color != null)
 			g.setColor(color);
@@ -91,7 +123,7 @@ public abstract class Textures {
 		g.setColor(oldColor);
 	}
 	
-	protected void drawClosed(@NotNull Graphics2D g, int p, @NotNull Coordinates topLeft, @NotNull Dimension dimension, @Nullable Color lighterColor, @Nullable Color darkerColor) {
+	protected void drawClosed(@NotNull Graphics2D g, int p, @NotNull MyCoordinates topLeft, @NotNull MyDimension dimension, @Nullable Color lighterColor, @Nullable Color darkerColor) {
 		int p2 = 2 * p;
 		int reducedW = dimension.width() - p;
 		int reducedW2 = dimension.width() - p2;
@@ -118,7 +150,7 @@ public abstract class Textures {
 		g.setColor(oldColor);
 	}
 	
-	protected void drawRevealed(@NotNull Graphics2D g, int p, @NotNull Coordinates topLeft, @NotNull Dimension dimension, @Nullable Color color) {
+	protected void drawRevealed(@NotNull Graphics2D g, int p, @NotNull MyCoordinates topLeft, @NotNull MyDimension dimension, @Nullable Color color) {
 		Color oldColor = g.getColor();
 		if (color != null)
 			g.setColor(color);
@@ -127,7 +159,7 @@ public abstract class Textures {
 		g.setColor(oldColor);
 	}
 	
-	protected void drawMine(@NotNull Graphics2D g, int p, @NotNull Coordinates topLeft, @Nullable Color mineColor, @Nullable Color reflexColor) {
+	protected void drawMine(@NotNull Graphics2D g, int p, @NotNull MyCoordinates topLeft, @Nullable Color mineColor, @Nullable Color reflexColor) {
 		Color oldColor = g.getColor();
 		
 		if (mineColor != null)
@@ -152,7 +184,7 @@ public abstract class Textures {
 		g.setColor(oldColor);
 	}
 	
-	protected void drawFlag(@NotNull Graphics2D g, int p, @NotNull Coordinates topLeft, @Nullable Color flagColor, @Nullable Color baseColor) {
+	protected void drawFlag(@NotNull Graphics2D g, int p, @NotNull MyCoordinates topLeft, @Nullable Color flagColor, @Nullable Color baseColor) {
 		Color oldColor = g.getColor();
 		
 		if (flagColor != null)
@@ -172,7 +204,7 @@ public abstract class Textures {
 		g.setColor(oldColor);
 	}
 	
-	protected void drawCross(@NotNull Graphics2D g, int p, @NotNull Coordinates topLeft, @NotNull Dimension dimension, @Nullable Color color) {
+	protected void drawCross(@NotNull Graphics2D g, int p, @NotNull MyCoordinates topLeft, @NotNull MyDimension dimension, @Nullable Color color) {
 		int x2 = topLeft.x() + dimension.width() - p;
 		int y2 = topLeft.y() + dimension.height() - p;
 		Stroke oldStroke = g.getStroke();
@@ -188,7 +220,7 @@ public abstract class Textures {
 		g.setColor(oldColor);
 	}
 	
-	protected void drawNumberOne(@NotNull Graphics2D g, int p, @NotNull Coordinates topLeft, @Nullable Color color) {
+	protected void drawNumberOne(@NotNull Graphics2D g, int p, @NotNull MyCoordinates topLeft, @Nullable Color color) {
 		Color oldColor = g.getColor();
 		if (color != null)
 			g.setColor(color);
@@ -200,7 +232,7 @@ public abstract class Textures {
 		g.setColor(oldColor);
 	}
 	
-	protected void drawNumberTwo(@NotNull Graphics2D g, int p, @NotNull Coordinates topLeft, @Nullable Color color) {
+	protected void drawNumberTwo(@NotNull Graphics2D g, int p, @NotNull MyCoordinates topLeft, @Nullable Color color) {
 		Color oldColor = g.getColor();
 		if (color != null)
 			g.setColor(color);
@@ -215,7 +247,7 @@ public abstract class Textures {
 		g.setColor(oldColor);
 	}
 	
-	protected void drawNumberThree(@NotNull Graphics2D g, int p, @NotNull Coordinates topLeft, @Nullable Color color) {
+	protected void drawNumberThree(@NotNull Graphics2D g, int p, @NotNull MyCoordinates topLeft, @Nullable Color color) {
 		Color oldColor = g.getColor();
 		if (color != null)
 			g.setColor(color);
@@ -227,7 +259,7 @@ public abstract class Textures {
 		g.setColor(oldColor);
 	}
 	
-	protected void drawNumberFour(@NotNull Graphics2D g, int p, @NotNull Coordinates topLeft, @Nullable Color color) {
+	protected void drawNumberFour(@NotNull Graphics2D g, int p, @NotNull MyCoordinates topLeft, @Nullable Color color) {
 		Color oldColor = g.getColor();
 		if (color != null)
 			g.setColor(color);
@@ -238,7 +270,7 @@ public abstract class Textures {
 		g.setColor(oldColor);
 	}
 	
-	protected void drawNumberFive(@NotNull Graphics2D g, int p, @NotNull Coordinates topLeft, @Nullable Color color) {
+	protected void drawNumberFive(@NotNull Graphics2D g, int p, @NotNull MyCoordinates topLeft, @Nullable Color color) {
 		Color oldColor = g.getColor();
 		if (color != null)
 			g.setColor(color);
@@ -250,7 +282,7 @@ public abstract class Textures {
 		g.setColor(oldColor);
 	}
 	
-	protected void drawNumberSix(@NotNull Graphics2D g, int p, @NotNull Coordinates topLeft, @Nullable Color color) {
+	protected void drawNumberSix(@NotNull Graphics2D g, int p, @NotNull MyCoordinates topLeft, @Nullable Color color) {
 		Color oldColor = g.getColor();
 		if (color != null)
 			g.setColor(color);
@@ -262,7 +294,7 @@ public abstract class Textures {
 		g.setColor(oldColor);
 	}
 	
-	protected void drawNumberSeven(@NotNull Graphics2D g, int p, @NotNull Coordinates topLeft, @Nullable Color color) {
+	protected void drawNumberSeven(@NotNull Graphics2D g, int p, @NotNull MyCoordinates topLeft, @Nullable Color color) {
 		Color oldColor = g.getColor();
 		if (color != null)
 			g.setColor(color);
@@ -274,7 +306,7 @@ public abstract class Textures {
 		g.setColor(oldColor);
 	}
 	
-	protected void drawNumberEight(@NotNull Graphics2D g, int p, @NotNull Coordinates topLeft, @Nullable Color color) {
+	protected void drawNumberEight(@NotNull Graphics2D g, int p, @NotNull MyCoordinates topLeft, @Nullable Color color) {
 		Color oldColor = g.getColor();
 		if (color != null)
 			g.setColor(color);
@@ -288,7 +320,7 @@ public abstract class Textures {
 		g.setColor(oldColor);
 	}
 	
-	protected void drawNumberNine(@NotNull Graphics2D g, int p, @NotNull Coordinates topLeft, @Nullable Color color) {
+	protected void drawNumberNine(@NotNull Graphics2D g, @SuppressWarnings("SameParameterValue") int p, @NotNull MyCoordinates topLeft, @Nullable Color color) {
 		Color oldColor = g.getColor();
 		if (color != null)
 			g.setColor(color);
@@ -300,7 +332,7 @@ public abstract class Textures {
 		g.setColor(oldColor);
 	}
 	
-	protected void drawNumberZero(@NotNull Graphics2D g, int p, @NotNull Coordinates topLeft, @Nullable Color color) {
+	protected void drawNumberZero(@NotNull Graphics2D g, @SuppressWarnings("SameParameterValue") int p, @NotNull MyCoordinates topLeft, @Nullable Color color) {
 		Color oldColor = g.getColor();
 		if (color != null)
 			g.setColor(color);
@@ -311,7 +343,7 @@ public abstract class Textures {
 		g.setColor(oldColor);
 	}
 	
-	protected void drawM(@NotNull Graphics2D g, int p, @NotNull Coordinates topLeft, @Nullable Color color) {
+	protected void drawM(@NotNull Graphics2D g, int p, @NotNull MyCoordinates topLeft, @Nullable Color color) {
 		Color oldColor = g.getColor();
 		if (color != null)
 			g.setColor(color);
@@ -325,7 +357,7 @@ public abstract class Textures {
 		g.setColor(oldColor);
 	}
 	
-	protected void drawI(@NotNull Graphics2D g, int p, @NotNull Coordinates topLeft, @Nullable Color color) {
+	protected void drawI(@NotNull Graphics2D g, int p, @NotNull MyCoordinates topLeft, @Nullable Color color) {
 		Color oldColor = g.getColor();
 		if (color != null)
 			g.setColor(color);
@@ -333,7 +365,7 @@ public abstract class Textures {
 		g.setColor(oldColor);
 	}
 	
-	protected void drawN(@NotNull Graphics2D g, int p, @NotNull Coordinates topLeft, @Nullable Color color) {
+	protected void drawN(@NotNull Graphics2D g, int p, @NotNull MyCoordinates topLeft, @Nullable Color color) {
 		Color oldColor = g.getColor();
 		if (color != null)
 			g.setColor(color);
@@ -345,7 +377,7 @@ public abstract class Textures {
 		g.setColor(oldColor);
 	}
 	
-	protected void drawE(@NotNull Graphics2D g, int p, @NotNull Coordinates topLeft, @Nullable Color color) {
+	protected void drawE(@NotNull Graphics2D g, int p, @NotNull MyCoordinates topLeft, @Nullable Color color) {
 		Color oldColor = g.getColor();
 		if (color != null)
 			g.setColor(color);
@@ -356,7 +388,7 @@ public abstract class Textures {
 		g.setColor(oldColor);
 	}
 	
-	protected void drawS(@NotNull Graphics2D g, int p, @NotNull Coordinates topLeft, @Nullable Color color) {
+	protected void drawS(@NotNull Graphics2D g, int p, @NotNull MyCoordinates topLeft, @Nullable Color color) {
 		Color oldColor = g.getColor();
 		if (color != null)
 			g.setColor(color);
@@ -368,7 +400,7 @@ public abstract class Textures {
 		g.setColor(oldColor);
 	}
 	
-	protected void drawW(@NotNull Graphics2D g, int p, @NotNull Coordinates topLeft, @Nullable Color color) {
+	protected void drawW(@NotNull Graphics2D g, int p, @NotNull MyCoordinates topLeft, @Nullable Color color) {
 		Color oldColor = g.getColor();
 		if (color != null)
 			g.setColor(color);
@@ -383,7 +415,7 @@ public abstract class Textures {
 		g.setColor(oldColor);
 	}
 	
-	protected void drawP(@NotNull Graphics2D g, int p, @NotNull Coordinates topLeft, @Nullable Color color) {
+	protected void drawP(@NotNull Graphics2D g, int p, @NotNull MyCoordinates topLeft, @Nullable Color color) {
 		Color oldColor = g.getColor();
 		if (color != null)
 			g.setColor(color);
@@ -394,7 +426,7 @@ public abstract class Textures {
 		g.setColor(oldColor);
 	}
 	
-	protected void drawR(@NotNull Graphics2D g, int p, @NotNull Coordinates topLeft, @Nullable Color color) {
+	protected void drawR(@NotNull Graphics2D g, int p, @NotNull MyCoordinates topLeft, @Nullable Color color) {
 		Color oldColor = g.getColor();
 		if (color != null)
 			g.setColor(color);
@@ -406,7 +438,7 @@ public abstract class Textures {
 		g.setColor(oldColor);
 	}
 	
-	protected void drawMinesweeper(@NotNull Graphics2D g, int p, @NotNull Coordinates topLeft, @Nullable Color color) {
+	protected void drawMinesweeper(@NotNull Graphics2D g, int p, @NotNull MyCoordinates topLeft, @Nullable Color color) {
 		Color oldColor = g.getColor();
 		int x = topLeft.x();
 		if (color != null)
@@ -435,7 +467,7 @@ public abstract class Textures {
 		g.setColor(oldColor);
 	}
 	
-	protected void drawTitle(@NotNull Graphics2D g, int p, @NotNull Coordinates topLeft, @Nullable Color textColor, @Nullable Color borderColor) {
+	protected void drawTitle(@NotNull Graphics2D g, int p, @NotNull MyCoordinates topLeft, @Nullable Color textColor, @Nullable Color borderColor) {
 		Color oldColor = g.getColor();
 		int offset = Math.max(2, p / 4 * 2);
 		
@@ -444,13 +476,175 @@ public abstract class Textures {
 		this.drawMinesweeper(g, p, topLeft, borderColor);
 		this.drawMinesweeper(g, p, topLeft.withX(topLeft.x() + offset), borderColor);
 		this.drawMinesweeper(g, p, topLeft.withY(topLeft.y() + offset), borderColor);
-		this.drawMinesweeper(g, p, new Coordinates(topLeft.x() + offset, topLeft.y() + offset), borderColor);
+		this.drawMinesweeper(g, p, new MyCoordinates(topLeft.x() + offset, topLeft.y() + offset), borderColor);
 		
 		if (textColor != null)
 			g.setColor(textColor);
 		else
 			g.setColor(oldColor);
-		this.drawMinesweeper(g, p, new Coordinates(topLeft.x() + offset / 2, topLeft.y() + offset / 2), textColor);
+		this.drawMinesweeper(g, p, new MyCoordinates(topLeft.x() + offset / 2, topLeft.y() + offset / 2), textColor);
+		
+		g.setColor(oldColor);
+	}
+	
+	// 17 * 17
+	protected void drawSmileyBase(@NotNull Graphics2D g, int p, @NotNull MyCoordinates topLeft, @Nullable Color backgroundColor, @Nullable Color borderColor) {
+		Color oldColor = g.getColor();
+		
+		if (borderColor != null)
+			g.setColor(borderColor);
+		g.fillRect(topLeft.x() + 6 * p, topLeft.y(), 5 * p, 17 * p);
+		g.fillRect(topLeft.x(), topLeft.y() + 6 * p, 17 * p, 5 * p);
+		g.fillRect(topLeft.x() + 4 * p, topLeft.y() + p, 9 * p, 15 * p);
+		g.fillRect(topLeft.x() + p, topLeft.y() + 4 * p, 15 * p, 9 * p);
+		g.fillRect(topLeft.x() + 3 * p, topLeft.y() + 2 * p, 11 * p, 13 * p);
+		g.fillRect(topLeft.x() + 2 * p, topLeft.y() + 3 * p, 13 * p, 11 * p);
+		
+		if (backgroundColor != null)
+			g.setColor(backgroundColor);
+		else
+			g.setColor(oldColor);
+		g.fillRect(topLeft.x() + 6 * p, topLeft.y() + p, 5 * p, 15 * p);
+		g.fillRect(topLeft.x() + p, topLeft.y() + 6 * p, 15 * p, 5 * p);
+		g.fillRect(topLeft.x() + 4 * p, topLeft.y() + 2 * p, 9 * p, 13 * p);
+		g.fillRect(topLeft.x() + 2 * p, topLeft.y() + 4 * p, 13 * p, 9 * p);
+		g.fillRect(topLeft.x() + 3 * p, topLeft.y() + 3 * p, 11 * p, 11 * p);
+		
+		g.setColor(oldColor);
+	}
+	
+	// 17 * 17
+	protected void drawSmileyHappy(@NotNull Graphics2D g, int p, @NotNull MyCoordinates topLeft, @Nullable Color backgroundColor, @Nullable Color borderColor) {
+		Color oldColor = g.getColor();
+		
+		if  (borderColor != null)
+			g.setColor(borderColor);
+		this.drawSmileyBase(g, p, topLeft, backgroundColor, borderColor);
+		g.fillRect(topLeft.x() + 5 * p, topLeft.y() + 5 * p, 2 * p, 2 * p);
+		g.fillRect(topLeft.x() + 10 * p, topLeft.y() + 5 * p, 2 * p, 2 * p);
+		g.fillRect(topLeft.x() + 4 * p, topLeft.y() + 10 * p, p, p);
+		g.fillRect(topLeft.x() + 12 * p, topLeft.y() + 10 * p, p, p);
+		g.fillRect(topLeft.x() + 5 * p, topLeft.y() + 11 * p, p, p);
+		g.fillRect(topLeft.x() + 11 * p, topLeft.y() + 11 * p, p, p);
+		g.fillRect(topLeft.x() + 6 * p, topLeft.y() + 12 * p, 5 * p, p);
+		
+		g.setColor(oldColor);
+	}
+	
+	// 17 * 17
+	protected void drawSmileyOoh(@NotNull Graphics2D g, int p, @NotNull MyCoordinates topLeft, @Nullable Color backgroundColor, @Nullable Color borderColor) {
+		Color oldColor = g.getColor();
+		
+		this.drawSmileyBase(g, p, topLeft, backgroundColor, borderColor);
+		
+		if  (borderColor != null)
+			g.setColor(borderColor);
+		
+		g.setColor(new Color((g.getColor().getRGB() & 0x00FFFFFF) | 0x80000000, true));
+		
+		g.fillRect(topLeft.x() + 4 * p,  topLeft.y() + 4 * p, 3 * p, 3 * p);
+		g.fillRect(topLeft.x() + 10 * p,  topLeft.y() + 4 * p, 3 * p, 3 * p);
+		g.fillRect(topLeft.x() + 6 * p,  topLeft.y() + 10 * p, p, 3 * p);
+		g.fillRect(topLeft.x() + 10 * p,  topLeft.y() + 10 * p, p, 3 * p);
+		
+		if  (borderColor != null)
+			g.setColor(borderColor);
+		else
+			g.setColor(oldColor);
+		
+		g.fillRect(topLeft.x() + 4 * p, topLeft.y() + 5 * p, 3 * p, p);
+		g.fillRect(topLeft.x() + 5 * p, topLeft.y() + 4 * p, p, 3 * p);
+		g.fillRect(topLeft.x() + 10 * p, topLeft.y() + 5 * p, 3 * p, p);
+		g.fillRect(topLeft.x() + 11 * p, topLeft.y() + 4 * p, p, 3 * p);
+		g.fillRect(topLeft.x() + 7 * p, topLeft.y() + 9 * p, 3 * p, p);
+		g.fillRect(topLeft.x() + 7 * p, topLeft.y() + 10 * p, p, p);
+		g.fillRect(topLeft.x() + 9 * p, topLeft.y() + 10 * p, p, p);
+		g.fillRect(topLeft.x() + 6 * p, topLeft.y() + 11 * p, p, p);
+		g.fillRect(topLeft.x() + 10 * p, topLeft.y() + 11 * p, p, p);
+		g.fillRect(topLeft.x() + 7 * p, topLeft.y() + 12 * p, p, p);
+		g.fillRect(topLeft.x() + 9 * p, topLeft.y() + 12 * p, p, p);
+		g.fillRect(topLeft.x() + 7 * p, topLeft.y() + 13 * p, 3 * p, p);
+		
+		g.setColor(oldColor);
+	}
+	
+	// 17 * 17
+	protected void drawSmileyDead(@NotNull Graphics2D g, int p, @NotNull MyCoordinates topLeft, @Nullable Color backgroundColor, @Nullable Color borderColor) {
+		Color oldColor = g.getColor();
+		
+		this.drawSmileyBase(g, p, topLeft, backgroundColor, borderColor);
+		
+		if  (borderColor != null)
+			g.setColor(borderColor);
+		
+		g.fillRect(topLeft.x() + 4 * p, topLeft.y() + 4 * p, p, p);
+		g.fillRect(topLeft.x() + 6  * p, topLeft.y() + 4 * p, p, p);
+		g.fillRect(topLeft.x() + 10  * p, topLeft.y() + 4 * p, p, p);
+		g.fillRect(topLeft.x() + 12  * p, topLeft.y() + 4 * p, p, p);
+		g.fillRect(topLeft.x() + 5  * p, topLeft.y() + 5 * p, p, p);
+		g.fillRect(topLeft.x() + 11  * p, topLeft.y() + 5 * p, p, p);
+		g.fillRect(topLeft.x() + 4 * p, topLeft.y() + 6 * p, p, p);
+		g.fillRect(topLeft.x() + 6  * p, topLeft.y() + 6 * p, p, p);
+		g.fillRect(topLeft.x() + 10  * p, topLeft.y() + 6 * p, p, p);
+		g.fillRect(topLeft.x() + 12  * p, topLeft.y() + 6 * p, p, p);
+		g.fillRect(topLeft.x() + 6  * p, topLeft.y() + 10 * p, 5 * p, p);
+		g.fillRect(topLeft.x() + 5  * p, topLeft.y() + 11 * p, p, p);
+		g.fillRect(topLeft.x() + 11  * p, topLeft.y() + 11 * p, p, p);
+		g.fillRect(topLeft.x() + 4  * p, topLeft.y() + 12 * p, p, p);
+		g.fillRect(topLeft.x() + 12  * p, topLeft.y() + 12 * p, p, p);
+		
+		g.setColor(oldColor);
+	}
+	
+	// 17 * 17
+	protected void drawSmileyCool(@NotNull Graphics2D g, int p, @NotNull MyCoordinates topLeft, @Nullable Color backgroundColor, @Nullable Color borderColor) {
+		Color oldColor = g.getColor();
+		
+		this.drawSmileyBase(g, p, topLeft, backgroundColor, borderColor);
+		
+		if  (borderColor != null)
+			g.setColor(borderColor);
+		
+		g.fillRect(topLeft.x() + 4  * p, topLeft.y() + 5 * p, 4 * p, 3 * p);
+		g.fillRect(topLeft.x() + 9  * p, topLeft.y() + 5 * p, 4 * p, 3 * p);
+		g.fillRect(topLeft.x() + 8  * p, topLeft.y() + 5 * p, p, p);
+		g.fillRect(topLeft.x() + 3  * p, topLeft.y() + 6 * p, p, p);
+		g.fillRect(topLeft.x() + 13  * p, topLeft.y() + 6 * p, p, p);
+		g.fillRect(topLeft.x() + 2  * p, topLeft.y() + 7 * p, p, p);
+		g.fillRect(topLeft.x() + 14  * p, topLeft.y() + 7 * p, p, p);
+		g.fillRect(topLeft.x() + p, topLeft.y() + 8 * p, p, p);
+		g.fillRect(topLeft.x() + 5 * p, topLeft.y() + 8 * p, 2 * p, p);
+		g.fillRect(topLeft.x() + 10 * p, topLeft.y() + 8 * p, 2 * p, p);
+		g.fillRect(topLeft.x() + 15  * p, topLeft.y() + 8 * p, p, p);
+		g.fillRect(topLeft.x() + 5  * p, topLeft.y() + 11 * p, p, p);
+		g.fillRect(topLeft.x() + 11  * p, topLeft.y() + 11 * p, p, p);
+		g.fillRect(topLeft.x() + 6  * p, topLeft.y() + 12 * p, 5 * p, p);
+		
+		g.setColor(new Color((g.getColor().getRGB() & 0x00FFFFFF) | 0x80000000, true));
+		
+		g.fillRect(topLeft.x() + 4  * p, topLeft.y() + 8 * p, p, p);
+		g.fillRect(topLeft.x() + 12  * p, topLeft.y() + 8 * p, p, p);
+		
+		g.setColor(oldColor);
+	}
+	
+	// 17 * 17
+	protected void drawPause(@NotNull Graphics2D g, int p, @NotNull MyCoordinates topLeft, @Nullable Color backgroundColor, @Nullable Color borderColor) {
+		Color oldColor = g.getColor();
+		
+		if (borderColor != null)
+			g.setColor(borderColor);
+			
+		g.fillRect(topLeft.x() + 2 * p, topLeft.y() + 3 * p, 13 * p, 3 * p);		// Top bar border
+		g.fillRect(topLeft.x() + 2 * p, topLeft.y() + 7 * p, 13 * p, 3 * p);		// Middle bar border
+		g.fillRect(topLeft.x() + 2 * p, topLeft.y() + 11 * p, 13 * p, 3 * p);		// Bottom bar border
+		
+		if (backgroundColor != null)
+			g.setColor(backgroundColor);
+		
+		g.fillRect(topLeft.x() + 3 * p, topLeft.y() + 4 * p, 11 * p, p);		// Top bar core
+		g.fillRect(topLeft.x() + 3 * p, topLeft.y() + 8 * p, 11 * p, p);		// Middle bar core
+		g.fillRect(topLeft.x() + 3 * p, topLeft.y() + 12 * p, 11 * p, p);		// Bottom bar core
 		
 		g.setColor(oldColor);
 	}

@@ -1,7 +1,7 @@
 package com.kissene3.game;
 
-import com.google.gson.annotations.SerializedName;
-import org.jetbrains.annotations.Range;
+import com.google.gson.annotations.*;
+import org.jetbrains.annotations.*;
 
 public record Difficulty(
 		@SerializedName("width") @Range(from = 3, to = Integer.MAX_VALUE) int width,

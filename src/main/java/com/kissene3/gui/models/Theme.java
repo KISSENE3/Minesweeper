@@ -1,7 +1,7 @@
-package com.kissene3.gui;
+package com.kissene3.gui.models;
 
-import com.google.gson.annotations.SerializedName;
-import org.jetbrains.annotations.NotNull;
+import com.google.gson.annotations.*;
+import org.jetbrains.annotations.*;
 
 import java.awt.*;
 
@@ -30,7 +30,11 @@ public record Theme(
 		@SerializedName("title_outline") Color titleOutline,
 		@SerializedName("text") Color text,
 		@SerializedName("selected_difficulty") Color selectedDifficulty,
-		@SerializedName("scroll_bar") Color scrollBar
+		@SerializedName("scroll_bar") Color scrollBar,
+		@SerializedName("smiley_face") Color smileyBase,
+		@SerializedName("smiley_border") Color smileyBorder,
+		@SerializedName("settings_base") Color settingsBase,
+		@SerializedName("settings_border") Color settingsBorder
 ) {
 	
 	public Theme {
@@ -38,7 +42,8 @@ public record Theme(
 				background == null || backgroundLighterShade == null || backgroundDarkerShade == null || border == null || backgroundExplodedMine == null ||
 				overlay == null || cross == null || flag == null || flagBase == null || mine == null || mineShade == null || numberOne == null ||
 				numberTwo == null || numberThree == null || numberFour == null || numberFive == null || numberSix == null || numberSeven == null ||
-				numberEight == null || title == null || titleOutline == null || text == null || selectedDifficulty == null || scrollBar == null
+				numberEight == null || title == null || titleOutline == null || text == null || selectedDifficulty == null || scrollBar == null ||
+				smileyBase == null || smileyBorder == null || settingsBase == null || settingsBorder == null
 		) {
 			throw new IllegalArgumentException("Theme colors cannot be null. Check the JSON fields.");
 		}

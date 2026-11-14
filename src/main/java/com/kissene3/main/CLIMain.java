@@ -1,15 +1,15 @@
 package com.kissene3.main;
 
-import com.kissene3.console.*;
+import com.kissene3.cli.*;
 import com.kissene3.game.*;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
+import com.kissene3.io.AppLogger;
+import com.kissene3.io.Save;
+import com.kissene3.io.DifficultyRegistry;
+import org.jetbrains.annotations.*;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Scanner;
+import java.math.BigInteger;
+import java.util.*;
 
 public class CLIMain {
 	/* ---------- FINAL ATTRIBUTES ---------- */
@@ -28,10 +28,13 @@ public class CLIMain {
 	/* ---------- CONSTRUCTORS ---------- */
 	
 	public CLIMain() {
+		AppLogger.info("Booting CLI in version" + Main.version + "...");
 		this.game = new Game(this.input, this.output, this.error);
 		while (this.running) {
 			this.init();
 			this.playAgain();
+			this.output.println(Main.useAnsi() ? "\033[3J\033[H" : "\n\n\n\n\n\n");
+			this.output.flush();
 		}
 	}
 	
@@ -39,44 +42,54 @@ public class CLIMain {
 		this.output.println(ConsoleColor.GREEN_BRIGHT + "Welcome to Minesweeper\n" + ConsoleColor.RESET);
 		this.output.flush();
 		
-		Difficulty difficulty = null;
 		List<String> options = new ArrayList<>(DifficultyRegistry.getAvailableNames());
 		Collections.sort(options);
 		
-		while (difficulty == null) {
-			for (int i = 0; i < options.size(); i++) {
+		while (true) {
+			if (Save.hasSaveFile())
+				this.output.println(ConsoleColor.YELLOW + "-1. Load from save" + ConsoleColor.RESET);
+			for (int i = 0; i < options.size(); i++)
 				this.output.println(ConsoleColor.YELLOW.toString() + (i + 1) + ". " + capitalize(options.get(i)) + ConsoleColor.RESET);
-			}
 			this.output.println(ConsoleColor.YELLOW.toString() + (options.size() + 1) + ". Custom" + ConsoleColor.RESET);
 			
 			this.output.print("Enter the number: ");
 			this.output.flush();
 			
-			if (!this.input.hasNextLine()) {
-				this.output.println("\nGame terminated by user. Goodbye!");
-				this.output.flush();
-				System.exit(0);
-			}
+			isDisconnected();
 			String in = input.nextLine().trim();
 			
 			try {
 				int choice = Integer.parseInt(in);
-				if (choice >= 1 && choice <= options.size()) {
-					difficulty = DifficultyRegistry.get(options.get(choice - 1));
+				if (choice == -1) {
+					BigInteger gameData = Save.loadFile();
+					if (gameData == null) {
+						this.output.println(ConsoleColor.RED + "The save file is corrupted.\n" + ConsoleColor.RESET);
+						this.output.flush();
+						continue;
+					}
+					Save.SaveDataPackage data = Save.parseSaveData(gameData);
+					Grid<?> grid = new Grid<>(data.columns(), data.rows(), data.gameData());
+					this.game.loadGame(grid, data.thirties());
+					break;
+				} else if (choice >= 1 && choice <= options.size()) {
+					this.game.newGame(DifficultyRegistry.get(options.get(choice - 1)));
+					break;
 				} else if (choice == options.size() + 1) {
-					difficulty = customDifficulty();
+					this.game.newGame(customDifficulty());
+					break;
 				} else {
 					this.output.println(ConsoleColor.RED + "Invalid choice.\n" + ConsoleColor.RESET);
 					this.output.flush();
 				}
-			} catch (NumberFormatException ex) {
-				this.error.println(ConsoleColor.RED + "Please enter a number.\n" + ConsoleColor.RESET);
+			} catch (NumberFormatException e) {
+				this.output.println(ConsoleColor.RED + "Please enter a number.\n" + ConsoleColor.RESET);
+				this.output.flush();
+			} catch (Exception e) {
+				this.error.println("Error: " + e.getMessage() + "\n");
 				this.error.flush();
+				AppLogger.warning(e.getMessage());
 			}
 		}
-		this.output.println("\n\n\n\n\n\n");
-		this.output.flush();
-		this.game.newGame(difficulty);
 	}
 	
 	/* ---------- CONSTRUCTORS ---------- */
@@ -88,11 +101,7 @@ public class CLIMain {
 			try {
 				this.output.print("Enter rows, columns and mines (e.g. 10 10 15): ");
 				this.output.flush();
-				if (!this.input.hasNextLine()) {
-					this.output.println("\nGame terminated by user. Goodbye!");
-					this.output.flush();
-					System.exit(0);
-				}
+				isDisconnected();
 				String[] p = this.input.nextLine().trim().split("\\s+");
 				if (p.length != 3) throw new Exception("Need 3 values.");
 				
@@ -102,25 +111,22 @@ public class CLIMain {
 						Integer.parseInt(p[2])
 				);
 			} catch (Exception e) {
-				this.error.println(ConsoleColor.RED + "Error: " + e.getMessage() + "\n" + ConsoleColor.RESET);
+				this.error.println("Error: " + e.getMessage() + "\n");
 				this.error.flush();
+				AppLogger.warning("Error: " + e.getMessage() + "\n");
 			}
 		}
 	}
 	
 	protected void playAgain() {
 		while (true) {
-			this.output.print("Do you want to play again? (yes/no): ");
+			this.output.print("Do you want to play again? (Y/N): ");
 			this.output.flush();
-			if (!this.input.hasNextLine()) {
-				this.output.println("\nGame terminated by user. Goodbye!");
-				this.output.flush();
-				System.exit(0);
-			}
+			isDisconnected();
 			String inp = input.nextLine().trim().toLowerCase();
-			if (inp.equals("yes") || inp.equals("y")) {
+			if (inp.equals("y") || inp.equals("yes") || inp.equals("t") || inp.equals("true")) {
 				break;
-			} else if (inp.equals("no") || inp.equals("n")) {
+			} else if (inp.equals("n") || inp.equals("no") || inp.equals("f") || inp.equals("false")) {
 				this.running = false;
 				break;
 			} else {
@@ -135,6 +141,15 @@ public class CLIMain {
 	
 	protected @NotNull String capitalize(@NotNull String s) {
 		return s.substring(0, 1).toUpperCase() + s.substring(1);
+	}
+	
+	protected void isDisconnected() {
+		if (!this.input.hasNextLine()) {
+			this.output.println(ConsoleColor.YELLOW_BRIGHT + "\nGame terminated by user. Goodbye!" + ConsoleColor.RESET);
+			this.output.flush();
+			AppLogger.info("Quitting...");
+			System.exit(0);
+		}
 	}
 	
 	/* ---------- UTILITIES ---------- */

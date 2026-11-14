@@ -1,22 +1,16 @@
 package com.kissene3.gui.components;
 
-import com.kissene3.gui.utilities.MyUtilities;
-import com.kissene3.gui.utilities.MyUtilities.Coordinates;
-import com.kissene3.gui.utilities.MyUtilities.Dimension;
-import com.kissene3.gui.Theme;
-import com.kissene3.gui.interfaces.Clickable;
-import com.kissene3.gui.interfaces.Drawable;
-import com.kissene3.gui.interfaces.Scrollable;
-import com.kissene3.gui.io.AppLogger;
-import com.kissene3.gui.screens.Screen;
-import com.kissene3.gui.utilities.TextureManager;
-import com.kissene3.gui.utilities.Textures;
-import org.jetbrains.annotations.NotNull;
+import com.kissene3.gui.models.Theme;
+import com.kissene3.gui.util.*;
+import com.kissene3.gui.interfaces.*;
+import com.kissene3.gui.screens.*;
+import com.kissene3.gui.util.*;
+import com.kissene3.io.AppLogger;
+import org.jetbrains.annotations.*;
 
 import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseWheelEvent;
-import java.util.ArrayList;
+import java.awt.event.*;
+import java.util.*;
 import java.util.List;
 
 @SuppressWarnings("unused")
@@ -33,31 +27,31 @@ public class MyScrollList extends MyComponent implements Clickable, Scrollable, 
 	private final int p2 = 2 * this.p;
 	
 	public MyScrollList(int x, int y, int width, int height, int itemHeight) {
-		super(new Coordinates(x, y), new Dimension(width, height));
+		super(new MyCoordinates(x, y), new MyDimension(width, height));
 		this.itemHeight = itemHeight;
 		this.textures = new Textures() {
 			@Override
-			protected @NotNull Dimension getAssetDimension(@NotNull Key key) {
+			protected @NotNull MyDimension getAssetDimension(@NotNull Key key) {
 				return switch (key) {
 					case BACKGROUND, CLOSED ->
-							new Dimension(MyScrollList.this.getWidth(), MyScrollList.this.getHeight());
+							new MyDimension(MyScrollList.this.getWidth(), MyScrollList.this.getHeight());
 					default -> throw new UnsupportedOperationException("This should never happen.");
 				};
 			}
 			
 			@Override
-			protected void drawMapping(@NotNull Graphics2D g, @NotNull Key key, @NotNull Dimension dimension) {
+			protected void drawMapping(@NotNull Graphics2D g, @NotNull Key key, @NotNull MyDimension dimension) {
 				switch (key) {
 					case BACKGROUND -> drawBackground(
 							g,
-							new MyUtilities.Coordinates(0, 0),
+							new MyCoordinates(0, 0),
 							dimension,
 							MyScrollList.this.getTheme().background()
 					);
 					case CLOSED -> drawClosed(
 							g,
 							MyScrollList.this.p,
-							new Coordinates(0, 0),
+							new MyCoordinates(0, 0),
 							dimension,
 							MyScrollList.this.getTheme().backgroundLighterShade(),
 							MyScrollList.this.getTheme().backgroundDarkerShade()

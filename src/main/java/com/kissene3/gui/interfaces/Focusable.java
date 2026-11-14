@@ -1,8 +1,8 @@
 package com.kissene3.gui.interfaces;
 
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.*;
 
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 
 /** Interface that must be implemented by components that handle focus and keyboard input. */
 @SuppressWarnings("unused")

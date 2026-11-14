@@ -1,18 +1,13 @@
 package com.kissene3.gui.components;
 
-import com.kissene3.gui.utilities.MyUtilities.*;
-import com.kissene3.gui.utilities.MyUtilities.Dimension;
-import com.kissene3.gui.utilities.MyUtilities.Rectangle;
+import com.kissene3.gui.util.*;
 import com.kissene3.gui.interfaces.*;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.*;
 
 import java.awt.*;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.StringSelection;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
+import java.awt.datatransfer.*;
+import java.awt.event.*;
+import java.awt.image.*;
 
 /** A graphical text input component */
 @SuppressWarnings("unused")
@@ -52,14 +47,14 @@ public class MyTextBox extends MyAbstractButton implements Focusable {
 	/* ---------- CONSTRUCTORS ---------- */
 	
 	public MyTextBox(int x, int y, int width, int height) {
-		this(new Rectangle(x, y, width, height));
+		this(new MyRectangle(x, y, width, height));
 	}
 	
-	public MyTextBox(@NotNull Coordinates topLeft, @NotNull Dimension dimensions) {
-		this(new Rectangle(topLeft, dimensions));
+	public MyTextBox(@NotNull MyCoordinates topLeft, @NotNull MyDimension dimensions) {
+		this(new MyRectangle(topLeft, dimensions));
 	}
 	
-	public MyTextBox(@NotNull Rectangle bounds) {
+	public MyTextBox(@NotNull MyRectangle bounds) {
 		super(bounds);
 		this.font = new Font("Monospaced", Font.PLAIN, (int)(this.getHeight() * 0.6));
 	}

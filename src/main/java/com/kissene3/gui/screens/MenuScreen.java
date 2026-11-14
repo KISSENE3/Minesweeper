@@ -1,23 +1,21 @@
 package com.kissene3.gui.screens;
 
-import com.kissene3.gui.*;
+import com.kissene3.gui.ScreenManager;
 import com.kissene3.gui.components.*;
-import com.kissene3.gui.io.AppLogger;
-import com.kissene3.gui.io.SettingsRegistry;
-import com.kissene3.gui.io.ThemeRegistry;
-import com.kissene3.gui.utilities.MyUtilities.Coordinates;
-import com.kissene3.gui.utilities.MyUtilities.Dimension;
-import com.kissene3.gui.utilities.TextureManager;
-import com.kissene3.gui.utilities.Textures;
-import org.jetbrains.annotations.NotNull;
+import com.kissene3.gui.io.*;
+import com.kissene3.gui.models.Theme;
+import com.kissene3.gui.util.*;
+import com.kissene3.io.AppLogger;
+import com.kissene3.io.Save;
+import com.kissene3.main.Main;
+import org.jetbrains.annotations.*;
 
 import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.function.Consumer;
+import java.awt.event.*;
+import java.awt.image.*;
+import java.math.BigInteger;
+import java.util.*;
+import java.util.function.*;
 
 public class MenuScreen extends Screen {
 	private final char[][] backgroundLayout = new char[][] {
@@ -44,104 +42,104 @@ public class MenuScreen extends Screen {
 		int pCell = CELL_SIZE / 16;
 		this.textures = new Textures() {
 			@Override
-			protected @NotNull Dimension getAssetDimension(@NotNull Key key) {
+			protected @NotNull MyDimension getAssetDimension(@NotNull Key key) {
 				return switch (key) {
 					case BACKGROUND, EXPLODED, CLOSED, REVEALED, MINE, FLAG, CROSS,
-						 ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT ->  new Dimension(CELL_SIZE, CELL_SIZE);
-					case TITLE -> new Dimension(121 * P_TITLE, 16 * P_TITLE);
+						 ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT ->  new MyDimension(CELL_SIZE, CELL_SIZE);
+					case TITLE -> new MyDimension(121 * P_TITLE, 16 * P_TITLE);
 					default -> throw new UnsupportedOperationException("This should never happen.");
 				};
 			}
 			
 			@Override
-			protected void drawMapping(@NotNull Graphics2D g, @NotNull Key key, @NotNull Dimension dimension) {
+			protected void drawMapping(@NotNull Graphics2D g, @NotNull Key key, @NotNull MyDimension dimension) {
 				switch (key) {
 					case BACKGROUND -> this.drawBackground(
 							g,
-							new Coordinates(0, 0),
+							new MyCoordinates(0, 0),
 							dimension,
 							MenuScreen.this.manager.getSettings().getTheme().background()
 					);
 					case EXPLODED -> this.drawBackground(
 							g,
-							new Coordinates(0, 0),
+							new MyCoordinates(0, 0),
 							dimension,
 							MenuScreen.this.manager.getSettings().getTheme().backgroundExplodedMine()
 					);
 					case CLOSED -> this.drawClosed(
 							g, pCell,
-							new Coordinates(0, 0),
+							new MyCoordinates(0, 0),
 							dimension,
 							MenuScreen.this.manager.getSettings().getTheme().backgroundLighterShade(),
 							MenuScreen.this.manager.getSettings().getTheme().backgroundDarkerShade()
 					);
 					case REVEALED -> this.drawRevealed(
 							g, pCell,
-							new Coordinates(0, 0),
+							new MyCoordinates(0, 0),
 							dimension,
 							MenuScreen.this.manager.getSettings().getTheme().border()
 					);
 					case MINE -> this.drawMine(
 							g, pCell,
-							new Coordinates(0, 0),
+							new MyCoordinates(0, 0),
 							MenuScreen.this.manager.getSettings().getTheme().mine(),
 							MenuScreen.this.manager.getSettings().getTheme().mineShade()
 					);
 					case FLAG -> this.drawFlag(
 							g, pCell,
-							new Coordinates(0, 0),
+							new MyCoordinates(0, 0),
 							MenuScreen.this.manager.getSettings().getTheme().flag(),
 							MenuScreen.this.manager.getSettings().getTheme().flagBase()
 					);
 					case CROSS -> this.drawCross(
 							g, pCell,
-							new Coordinates(0, 0),
+							new MyCoordinates(0, 0),
 							dimension,
 							MenuScreen.this.manager.getSettings().getTheme().cross()
 					);
 					case ONE -> this.drawNumberOne(
 							g, pCell,
-							new Coordinates(0, 0),
+							new MyCoordinates(0, 0),
 							MenuScreen.this.manager.getSettings().getTheme().numberOne()
 					);
 					case TWO -> this.drawNumberTwo(
 							g, pCell,
-							new Coordinates(0, 0),
+							new MyCoordinates(0, 0),
 							MenuScreen.this.manager.getSettings().getTheme().numberTwo()
 					);
 					case THREE -> this.drawNumberThree(
 							g, pCell,
-							new Coordinates(0, 0),
+							new MyCoordinates(0, 0),
 							MenuScreen.this.manager.getSettings().getTheme().numberThree()
 					);
 					case FOUR -> this.drawNumberFour(
 							g, pCell,
-							new Coordinates(0, 0),
+							new MyCoordinates(0, 0),
 							MenuScreen.this.manager.getSettings().getTheme().numberFour()
 					);
 					case FIVE -> this.drawNumberFive(
 							g, pCell,
-							new Coordinates(0, 0),
+							new MyCoordinates(0, 0),
 							MenuScreen.this.manager.getSettings().getTheme().numberFive()
 					);
 					case SIX -> this.drawNumberSix(
 							g, pCell,
-							new Coordinates(0, 0),
+							new MyCoordinates(0, 0),
 							MenuScreen.this.manager.getSettings().getTheme().numberSix()
 					);
 					case SEVEN -> this.drawNumberSeven(
 							g, pCell,
-							new Coordinates(0, 0),
+							new MyCoordinates(0, 0),
 							MenuScreen.this.manager.getSettings().getTheme().numberSeven()
 					);
 					case EIGHT -> this.drawNumberEight(
 							g, pCell,
-							new Coordinates(0, 0),
+							new MyCoordinates(0, 0),
 							MenuScreen.this.manager.getSettings().getTheme().numberEight()
 					);
 					case TITLE -> this.drawTitle(
 							g, P_TITLE,
-							new Coordinates(0, 0),
+							new MyCoordinates(0, 0),
 							MenuScreen.this.manager.getSettings().getTheme().title(),
 							MenuScreen.this.manager.getSettings().getTheme().titleOutline()
 					);
@@ -162,32 +160,34 @@ public class MenuScreen extends Screen {
 				System.exit(0);
 			}));
 		
-		this.componentsManager.addComponent(this.getMinesweeperButton((this.getWidth() - 192) / 2, this.getHeight() - 192, "THEME",
+		this.componentsManager.addComponent(this.getMinesweeperButton((this.getWidth() - 192) / 2, this.getHeight() - 192, "SETTINGS",
 			(e) -> {
-				if (e.getButton() != MouseEvent.BUTTON1 && e.getButton() != MouseEvent.BUTTON3)
+				if (e.getButton() != MouseEvent.BUTTON1)
 					return;
-				
-				List<String> options = new ArrayList<>(ThemeRegistry.getAvailableNames());
-				Collections.sort(options);
-				int index = options.indexOf(this.manager.getSettings().getThemeKey());
-			
-				if (e.getButton() == MouseEvent.BUTTON1)
-					index = (index + 1) % options.size();
-				else
-					index = (index - 1 + options.size()) % options.size();
-				
-				String key = options.get(index);
-				this.manager.getSettings().setTheme(key);
+				this.manager.runAfterDraw(() -> this.manager.pushScreen(new SettingsScreen(this.manager)));
 			}));
 		
 		this.componentsManager.addComponent(this.getMinesweeperButton((this.getWidth() - 192) / 2, this.getHeight() - 288, "PLAY",
 			(e) -> {
 				if (e.getButton() != MouseEvent.BUTTON1)
 					return;
-				this.manager.pushScreen(new DifficultyScreen(MenuScreen.this.manager));
+				
+				if (Save.hasSaveFile())
+					this.manager.pushScreen(new ConfirmScreen(
+							this.manager,
+							"Do you want to load your last save?",
+							() -> {
+								BigInteger gameData = Save.loadFile();
+								if (gameData == null)
+									return;
+								this.manager.pushScreen(new GameScreen(this.manager, Save.parseSaveData(gameData)));
+							},
+							() -> this.manager.pushScreen(new DifficultyScreen(this.manager))));
+				else
+					this.manager.runAfterDraw(() -> this.manager.pushScreen(new DifficultyScreen(MenuScreen.this.manager)));
 			}));
 		
-		AppLogger.info("MenuScreen initialized.");
+		AppLogger.info(this.getClass().getSimpleName() + " initialized.");
 	}
 	
 	private @NotNull MinesweeperButton getMinesweeperButton(int x, int y, String label, Consumer<MouseEvent> action) {
@@ -250,6 +250,20 @@ public class MenuScreen extends Screen {
 		g.drawImage(this.getTexture(Textures.Key.TITLE), startX, 150, null);
 		
 		this.componentsManager.draw(g);
+		
+		Graphics2D g2d = (Graphics2D) g.create();
+		g2d.setFont(new Font("Monospaced", Font.BOLD, 14));
+		g2d.setColor(this.manager.getSettings().getTheme().text());
+		
+		String versionText = "v" + Main.version;
+		FontMetrics fm = g2d.getFontMetrics();
+		int textWidth = fm.stringWidth(versionText);
+		
+		int xPos = this.getWidth() - textWidth - 4;
+		int yPos = this.getHeight() - 4;
+		
+		g2d.drawString(versionText, xPos, yPos);
+		g2d.dispose();
 	}
 	
 	private void drawCell(@NotNull Graphics2D g, char c, int x, int y) {

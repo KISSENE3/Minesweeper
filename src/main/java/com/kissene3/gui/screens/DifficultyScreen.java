@@ -1,57 +1,52 @@
 package com.kissene3.gui.screens;
 
-import com.kissene3.game.Difficulty;
-import com.kissene3.game.DifficultyRegistry;
-import com.kissene3.gui.utilities.MyUtilities.Coordinates;
-import com.kissene3.gui.utilities.MyUtilities.Dimension;
-import com.kissene3.gui.utilities.MyUtilities.Rectangle;
-import com.kissene3.gui.Theme;
-import com.kissene3.gui.components.MinesweeperButton;
-import com.kissene3.gui.components.MyLabel;
-import com.kissene3.gui.components.MyScrollList;
-import com.kissene3.gui.components.MyTextBox;
-import com.kissene3.gui.io.AppLogger;
-import com.kissene3.gui.utilities.TextureManager;
-import com.kissene3.gui.utilities.Textures;
-import org.jetbrains.annotations.NotNull;
+import com.kissene3.game.*;
+import com.kissene3.gui.ScreenManager;
+import com.kissene3.gui.models.Theme;
+import com.kissene3.gui.components.*;
+import com.kissene3.gui.util.*;
+import com.kissene3.io.AppLogger;
+import com.kissene3.io.DifficultyRegistry;
+import com.kissene3.io.Save;
+import org.jetbrains.annotations.*;
 
 import java.awt.*;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.function.*;
 
 public class DifficultyScreen extends Screen {
 	
-	private final MyTextBox[] textBoxes = new MyTextBox[3];
-	private final Textures textures;
-	private boolean isCustom = false;
-	private String difficulty;
+	protected final MyTextBox[] textBoxes = new MyTextBox[3];
+	protected final Textures textures;
+	protected boolean isCustom = false;
+	protected String difficulty;
 	
 	public DifficultyScreen(@NotNull ScreenManager manager) {
 		super(manager);
 		this.textures = new Textures() {
 			@Override
-			protected @NotNull Dimension getAssetDimension(@NotNull Key key) {
+			protected @NotNull MyDimension getAssetDimension(@NotNull Key key) {
 				return switch (key) {
 					case BACKGROUND, CLOSED ->
-						new Dimension(DifficultyScreen.this.getWidth(), DifficultyScreen.this.getHeight());
+						new MyDimension(DifficultyScreen.this.getWidth(), DifficultyScreen.this.getHeight());
 					default -> throw new UnsupportedOperationException("This should never happen.");
 				};
 			}
 			
 			@Override
-			protected void drawMapping(@NotNull Graphics2D g, @NotNull Key key, @NotNull Dimension dimension) {
+			protected void drawMapping(@NotNull Graphics2D g, @NotNull Key key, @NotNull MyDimension dimension) {
 				switch (key) {
 					case BACKGROUND -> this.drawBackground(
 							g,
-							new Coordinates(0, 0),
+							new MyCoordinates(0, 0),
 							dimension,
 							DifficultyScreen.this.manager.getSettings().getTheme().background()
 					);
 					case CLOSED -> this.drawClosed(
 							g,
 							DifficultyScreen.this.getP(),
-							new Coordinates(0, 0),
+							new MyCoordinates(0, 0),
 							dimension,
 							DifficultyScreen.this.manager.getSettings().getTheme().backgroundLighterShade(),
 							DifficultyScreen.this.manager.getSettings().getTheme().backgroundDarkerShade()
@@ -69,7 +64,7 @@ public class DifficultyScreen extends Screen {
 			(e) -> {
 				if (e.getButton() != MouseEvent.BUTTON1)
 					return;
-				DifficultyScreen.this.manager.popScreen();
+				DifficultyScreen.this.manager.runAfterDraw(() -> DifficultyScreen.this.manager.popScreen());
 			}));
 		
 		this.componentsManager.addComponent(this.getMinesweeperButton((this.getWidth() - 192) / 2, this.getHeight() - 80, "START",
@@ -92,8 +87,12 @@ public class DifficultyScreen extends Screen {
 					this.manager.getSettings().setDifficulty(this.difficulty, null);
 				}
 				
-				DifficultyScreen.this.manager.popAll();
-				DifficultyScreen.this.manager.pushScreen(new GameScreen(DifficultyScreen.this.manager, this.manager.getSettings().getCurrentDifficulty()));
+				Save.deleteSaveFile();
+				
+				DifficultyScreen.this.manager.runAfterDraw(() -> {
+					DifficultyScreen.this.manager.popAll();
+					DifficultyScreen.this.manager.pushScreen(new GameScreen(DifficultyScreen.this.manager, this.manager.getSettings().getCurrentDifficulty()));
+				});
 			}));
 		
 		this.textBoxes[0] = this.getMyTextbox(128);
@@ -110,10 +109,10 @@ public class DifficultyScreen extends Screen {
 		
 		this.componentsManager.addComponent(getMyScrollList());
 		
-		AppLogger.info("DifficultyScreen initialized.");
+		AppLogger.info(this.getClass().getSimpleName() + " initialized.");
 	}
 	
-	private @NotNull MinesweeperButton getMinesweeperButton(int x, int y, String label, Consumer<MouseEvent> actionOnClick) {
+	protected @NotNull MinesweeperButton getMinesweeperButton(int x, int y, String label, Consumer<MouseEvent> actionOnClick) {
 		return new MinesweeperButton(x, y, 192, 64, label) {
 			
 			@Override
@@ -128,7 +127,7 @@ public class DifficultyScreen extends Screen {
 		};
 	}
 	
-	private @NotNull MyTextBox getMyTextbox(int y) {
+	protected @NotNull MyTextBox getMyTextbox(int y) {
 		MyTextBox textBox = new MyTextBox(this.getWidth() - 224, y, 192, 48) {
 			@Override
 			protected boolean isValidChar(char c) {
@@ -142,8 +141,8 @@ public class DifficultyScreen extends Screen {
 		return textBox;
 	}
 	
-	private @NotNull MyLabel getMyLabel(int y, String text) {
-		MyLabel label = new MyLabel(new Rectangle(this.getWidth() - 224, y, 128, 32), text) {
+	protected @NotNull MyLabel getMyLabel(int y, String text) {
+		MyLabel label = new MyLabel(new MyRectangle(this.getWidth() - 224, y, 128, 32), text) {
 			@Override
 			public @NotNull Color getColorWhenActive() {
 				return DifficultyScreen.this.manager.getSettings().getTheme().text();
@@ -160,7 +159,7 @@ public class DifficultyScreen extends Screen {
 		return label;
 	}
 	
-	private @NotNull MyScrollList getMyScrollList() {
+	protected @NotNull MyScrollList getMyScrollList() {
 		MyScrollList scrollList = new MyScrollList(32, 128, 192, 256, 32) {
 			@Override
 			public void onSelectionChanged(int newIndex) {
@@ -193,7 +192,7 @@ public class DifficultyScreen extends Screen {
 		return scrollList;
 	}
 	
-	private void setupCustomMode() {
+	protected void setupCustomMode() {
 		this.difficulty = "custom";
 		this.isCustom = true;
 		
@@ -211,7 +210,7 @@ public class DifficultyScreen extends Screen {
 		this.componentsManager.handleFocusChange(this.textBoxes[0]);
 	}
 	
-	private void updateFields(@NotNull String difficultyKey) {
+	protected void updateFields(@NotNull String difficultyKey) {
 		this.difficulty = difficultyKey;
 		this.isCustom = false;
 		
@@ -226,7 +225,7 @@ public class DifficultyScreen extends Screen {
 		}
 	}
 	
-	private int getP() {
+	protected int getP() {
 		return 5;
 	}
 	
@@ -237,12 +236,12 @@ public class DifficultyScreen extends Screen {
 	
 	@Override
 	public int getX() {
-		return this.manager.getCanvas().getWidth() / 2 - this.getWidth() / 2;
+		return (this.manager.getCanvas().getWidth() - this.getWidth()) / 2;
 	}
 	
 	@Override
 	public int getY() {
-		return this.manager.getCanvas().getHeight() / 2 - this.getHeight() / 2;
+		return (this.manager.getCanvas().getHeight() - this.getHeight()) / 2;
 	}
 	
 	@Override

@@ -22,5 +22,9 @@
   "title_outline": "#FF808080",
   "text": "#FFFFFFFF",
   "selected_difficulty": "#FF3050AA",
-  "scroll_bar": "#80A0A0A0"
+  "scroll_bar": "#80A0A0A0",
+  "smiley_face": "#FFFFFF00",
+  "smiley_border": "#FF000000",
+  "settings_base": "#FF505050",
+  "settings_border": "#FF000000"
 }

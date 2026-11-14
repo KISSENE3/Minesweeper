@@ -1,7 +1,6 @@
 package com.kissene3.game;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @SuppressWarnings("unused")
 public enum CellDisplay {

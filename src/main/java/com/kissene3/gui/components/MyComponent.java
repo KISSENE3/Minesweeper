@@ -1,9 +1,8 @@
 package com.kissene3.gui.components;
 
-import com.kissene3.gui.interfaces.Component;
-import com.kissene3.gui.utilities.MyUtilities.*;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
+import com.kissene3.gui.interfaces.*;
+import com.kissene3.gui.util.*;
+import org.jetbrains.annotations.*;
 
 import static java.util.Objects.requireNonNull;
 
@@ -16,7 +15,7 @@ import static java.util.Objects.requireNonNull;
 public abstract class MyComponent implements Component {
 	/* ---------- ATTRIBUTES ---------- */
 	
-	private Rectangle bounds;
+	private MyRectangle bounds;
 	
 	/** The flag that indicates if the component is active and can be interacted with. */
 	protected boolean isActive = true;
@@ -25,38 +24,38 @@ public abstract class MyComponent implements Component {
 	/* ---------- CONSTRUCTORS ---------- */
 	
 	public MyComponent(int x, int y, int width, int height) {
-		this(new Rectangle(x, y, width, height));
+		this(new MyRectangle(x, y, width, height));
 	}
 	
-	public MyComponent(@NotNull Coordinates topLeft, @NotNull Dimension dimensions) {
-		this(new Rectangle(topLeft, dimensions));
+	public MyComponent(@NotNull MyCoordinates topLeft, @NotNull MyDimension dimensions) {
+		this(new MyRectangle(topLeft, dimensions));
 	}
 	
-	public MyComponent(@NotNull Rectangle bounds) {
+	public MyComponent(@NotNull MyRectangle bounds) {
 		this.setBounds(bounds);
 	}
 	
 	/* ---------- CONSTRUCTORS ---------- */
 	/* ---------- SPATIAL GETTERS/SETTERS ---------- */
 	
-	public final @NotNull Rectangle getBounds() {
+	public final @NotNull MyRectangle getBounds() {
 		return this.bounds;
 	}
 	
 	/** The master setter for the component's bounds. All other spatial setters delegate to this method. */
 	@Override
-	public final void setBounds(@NotNull Rectangle bounds) {
+	public final void setBounds(@NotNull MyRectangle bounds) {
 		this.bounds = requireNonNull(bounds);
 		this.onBoundsChanged();
 	}
 	
-	public final void setBounds(@NotNull Coordinates topLeft, @NotNull Dimension dimensions) {
-		this.setBounds(new Rectangle(topLeft, dimensions));
+	public final void setBounds(@NotNull MyCoordinates topLeft, @NotNull MyDimension dimensions) {
+		this.setBounds(new MyRectangle(topLeft, dimensions));
 	}
 	
 	@Override
 	public final void setBounds(int x, int y, int width, int height) {
-		this.setBounds(new Rectangle(x, y, width, height));
+		this.setBounds(new MyRectangle(x, y, width, height));
 	}
 	
 	@Override
@@ -91,28 +90,28 @@ public abstract class MyComponent implements Component {
 		this.setBounds(this.bounds.withHeight(height));
 	}
 	
-	public final @NotNull Coordinates getTopLeft() {
+	public final @NotNull MyCoordinates getTopLeft() {
 		return this.bounds.topLeft();
 	}
-	public final void setTopLeft(@NotNull Coordinates topLeft) {
+	public final void setTopLeft(@NotNull MyCoordinates topLeft) {
 		this.setBounds(this.bounds.withTopLeft(topLeft));
 	}
 	public final void setTopLeft(int x, int y) {
-		this.setTopLeft(new Coordinates(x, y));
+		this.setTopLeft(new MyCoordinates(x, y));
 	}
 	
-	public final @NotNull Coordinates getBottomRight() {
+	public final @NotNull MyCoordinates getBottomRight() {
 		return this.bounds.bottomRight();
 	}
 	
-	public final @NotNull Dimension getDimensions() {
+	public final @NotNull MyDimension getDimensions() {
 		return this.bounds.dimensions();
 	}
-	public final void setDimensions(@NotNull Dimension dimensions) {
+	public final void setDimensions(@NotNull MyDimension dimensions) {
 		this.setBounds(this.bounds.withDimensions(dimensions));
 	}
 	public final void setDimensions(int width, int height) {
-		this.setDimensions(new Dimension(width, height));
+		this.setDimensions(new MyDimension(width, height));
 	}
 	
 	/* ---------- SPATIAL/SETTERS ---------- */
@@ -144,22 +143,22 @@ public abstract class MyComponent implements Component {
 	
 	/**
 	 * Checks if the specified {@code coordinates} are contained within the component's bounds.
-	 * @param coordinates The {@link Coordinates} to check.
+	 * @param coordinates The {@link MyCoordinates} to check.
 	 * @return {@code true} if the coordinates are within the component's bounds, {@code false} otherwise.
 	 */
 	@Contract(pure = true)
-	public boolean contains(@NotNull Coordinates coordinates) {
+	public boolean contains(@NotNull MyCoordinates coordinates) {
 		return this.bounds.contains(coordinates);
 	}
 	
 	/**
-	 * Checks if the specified {@code rectangle} is contained within the component's bounds.
-	 * @param rectangle The {@link Rectangle} to check.
-	 * @return {@code true} if the rectangle is within the component's bounds, {@code false} otherwise.
+	 * Checks if the specified {@code myRectangle} is contained within the component's bounds.
+	 * @param myRectangle The {@link MyRectangle} to check.
+	 * @return {@code true} if the myRectangle is within the component's bounds, {@code false} otherwise.
 	 */
 	@Contract(pure = true)
-	public boolean contains(@NotNull Rectangle rectangle) {
-		return this.bounds.contains(rectangle);
+	public boolean contains(@NotNull MyRectangle myRectangle) {
+		return this.bounds.contains(myRectangle);
 	}
 	
 	/**

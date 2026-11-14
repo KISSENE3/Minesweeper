@@ -1,14 +1,14 @@
 package com.kissene3.main;
 
-import com.kissene3.gui.*;
-import com.kissene3.gui.io.AppLogger;
-import com.kissene3.gui.io.SettingsRegistry;
+import com.kissene3.gui.ScreenManager;
+import com.kissene3.gui.io.*;
+import com.kissene3.gui.models.Settings;
 import com.kissene3.gui.screens.*;
+import com.kissene3.io.AppLogger;
 
 import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.image.BufferStrategy;
+import java.awt.event.*;
+import java.awt.image.*;
 
 public class GUIMain {
 	/* ---------- ATTRIBUTES ---------- */
@@ -19,7 +19,7 @@ public class GUIMain {
 	/* ---------- CONSTRUCTORS ---------- */
 	
 	public GUIMain() {
-		AppLogger.info("Booting...");
+		AppLogger.info("Booting GUI in version " + Main.version + "...");
 		this.settings = SettingsRegistry.load();
 		this.start();
 	}
@@ -30,6 +30,7 @@ public class GUIMain {
 		
 		Canvas canvas = new Canvas();
 		frame.add(canvas);
+		frame.setResizable(false);
 		frame.setVisible(true);
 		
 		ScreenManager screenManager = new ScreenManager(canvas, frame, this.settings);
@@ -92,7 +93,7 @@ public class GUIMain {
 				}
 				
 				try { //noinspection BusyWait
-					Thread.sleep(25);
+					Thread.sleep(16);
 				} catch (Exception _) {}
 			}
 		}).start();

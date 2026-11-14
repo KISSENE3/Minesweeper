@@ -2,11 +2,10 @@ package com.kissene3.gui.screens;
 
 import com.kissene3.gui.*;
 import com.kissene3.gui.interfaces.Component;
-import org.jetbrains.annotations.MustBeInvokedByOverriders;
-import org.jetbrains.annotations.NotNull;
-import java.util.List;
+import org.jetbrains.annotations.*;
 
 import java.awt.*;
+import java.util.List;
 
 @SuppressWarnings("unused")
 public abstract class Screen {

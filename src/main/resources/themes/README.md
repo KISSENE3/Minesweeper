@@ -3,7 +3,7 @@
 This folder contains JSON files used to customize the visual appearance of the game. You can create your own themes by adding new `.json` files here.
 
 > [!TIP]
-> New themes will automatically be detected by the game and identified by their **filename** (e.g., `light.json` will be listed as "light").
+> New themes will automatically be detected by the game and identified by their **filename** (e.g., `light.json` will be listed as "Light").
 >
 > **Note:** For consistency and to avoid naming conflicts, please use **only lowercase letters** for the filenames (e.g., `dark.json` instead of `Dark.json`).
 
@@ -29,6 +29,13 @@ Each theme file must define a complete set of colors. Colors can be specified in
 | `number_one` to `number_eight` | Colors for the numbers indicating nearby mines (1-8).                    |
 | `title`                        | Primary color for the game title/UI text.                                |
 | `title_outline`                | Outline color for the game title/UI text.                                |
+| `text`                         | General color for standard text labels and UI information.               |
+| `selected_difficulty`          | Highlight color used to indicate the currently selected difficulty item. |
+| `scroll_bar`                   | Color of the interactive track bars when content overflows the screen.   |
+| `smiley_face`                  | The base color of Smiley.                                                |
+| `smiley_border`                | Color of the border and the details of Smiley.                           |
+| `settings_base`                | The main color of the cogwheel icon.                                     |
+| `settings_border`              | Color of the border of the cogwheel icon.                                |
 
 ---
 
@@ -39,7 +46,9 @@ The game engine is flexible with how you write hex codes. The following formats 
 - **Java-style:** `0xRRGGBB` or `0XRRGGBB`.
 - **With Alpha:** `AARRGGBB`, `#AARRGGBB` or `0xAARRGGBB`.
 
-*If you use a 6-character format, the alpha channel will automatically be set to 100% (fully opaque). The overlay property is the only one typically using a lower alpha (e.g., #60FFFFFF).*
+*If you use a 6-character format, the alpha channel will automatically be set to 100% (fully opaque). Properties like `overlay` or `scroll_bar` typically use a lower alpha to support transparency (e.g., `#60FFFFFF`).*
+
+---
 
 ## 📝 Example Format (`light.json`)
 
@@ -66,7 +75,13 @@ The game engine is flexible with how you write hex codes. The following formats 
   "number_eight": "#FF808080",
   "title": "#FFFF0000",
   "title_outline": "#FF000000",
-  "text": "#FF000000"
+  "text": "#FF000000",
+  "selected_difficulty": "#FF4090FF",
+  "scroll_bar": "#66000000",
+  "smiley_face": "#FFFFFF00",
+  "smiley_border": "#FF000000",
+  "settings_base": "#FF505050",
+  "settings_border": "#FF000000"
 }
 ```
 
@@ -78,6 +93,7 @@ The game comes with two standard themes: `light.json` and `dark.json`.
 * **Customization:** You can freely modify these files or create new ones to change the game themes.
 * **Restoring Defaults:** If you make a mistake or want to go back to the original settings, simply **delete the file(s)** from this folder.
 * **Auto-Repair:** The next time you launch the game, the missing default files (including this README) will be automatically re-created.
+* **Notes:** You can save any notes in any file that's not a `.json`, the `README.md` and the `README.txt` files will always be renewed, so do not keep your notes in these files.
 
 > [!WARNING]
 > If you want to keep your custom changes, make sure to back them up before deleting any files!

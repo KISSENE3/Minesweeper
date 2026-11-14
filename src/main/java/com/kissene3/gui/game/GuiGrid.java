@@ -1,61 +1,87 @@
-package com.kissene3.gui;
+package com.kissene3.gui.game;
 
-import com.kissene3.game.Difficulty;
-import com.kissene3.game.Grid;
+import com.kissene3.game.*;
+import com.kissene3.gui.models.Settings;
+import com.kissene3.gui.models.Theme;
+import com.kissene3.gui.components.Smiley;
 import com.kissene3.gui.interfaces.*;
 import com.kissene3.gui.interfaces.Component;
-import com.kissene3.gui.utilities.MyUtilities.Coordinates;
-import com.kissene3.gui.utilities.MyUtilities.Dimension;
-import com.kissene3.gui.utilities.MyUtilities.Rectangle;
-import com.kissene3.gui.utilities.TextureManager;
-import com.kissene3.gui.utilities.Textures;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import com.kissene3.gui.screens.*;
+import com.kissene3.gui.util.*;
+import org.jetbrains.annotations.*;
+
 import java.awt.*;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseWheelEvent;
+import java.awt.event.*;
+import java.math.BigInteger;
+
 import static java.util.Objects.requireNonNull;
 
 @SuppressWarnings("unused")
-public class GUIGrid extends Grid<GUICell> implements Component, Clickable, Hoverable, Drawable, Scrollable {
-	protected Rectangle bounds;
+public class GuiGrid extends Grid<GuiCell> implements Component, Clickable, Hoverable, Drawable, Scrollable {
+	protected MyRectangle bounds;
+	protected Screen parentScreen;
+	protected Smiley smiley;
 	protected Settings settings;
 	protected Textures texture;
 	protected boolean isActive;
 	protected boolean isVisible;
 	protected boolean isHovered;
 	protected int lastSize = -1;
-	protected GUICell lastHovered;
-	protected GUICell lastPressed;
+	protected GuiCell lastHovered;
+	protected GuiCell lastPressed;
 	protected int scrollX = 0;
 	protected int scrollY = 0;
 	protected int viewWidth;
 	protected int viewHeight;
 	
-	public GUIGrid(@NotNull Coordinates coordinates, @NotNull Difficulty difficulty, @NotNull Settings settings) {
+	public GuiGrid(@NotNull MyCoordinates coordinates, @NotNull Difficulty difficulty, @NotNull Screen parentScreen, @Nullable Smiley smiley) {
 		super(difficulty);
-		this.settings = settings;
-		this.bounds = new Rectangle(coordinates, new Dimension(
+		this.parentScreen = parentScreen;
+		this.settings = this.parentScreen.getManager().getSettings();
+		this.bounds = new MyRectangle(coordinates, new MyDimension(
 				difficulty.width() * this.settings.getCellSize().getSize(),
 				difficulty.height() * this.settings.getCellSize().getSize()
 		));
-		this.texture = new Textures() {
+		this.smiley = smiley;
+		this.texture = this.createTexture();
+		TextureManager.addPack(this.texture);
+		this.isVisible = true;
+		this.isActive = true;
+	}
+	
+	public GuiGrid(@NotNull MyCoordinates coordinates, int gameWidth, int gameHeight, @NotNull BigInteger cellStates, @NotNull Screen parentScreen, @Nullable Smiley smiley) {
+		super(gameWidth, gameHeight, cellStates);
+		this.parentScreen = parentScreen;
+		this.settings = this.parentScreen.getManager().getSettings();
+		this.bounds = new MyRectangle(coordinates, new MyDimension(
+				gameWidth * this.settings.getCellSize().getSize(),
+				gameHeight * this.settings.getCellSize().getSize()
+		));
+		this.smiley = smiley;
+		this.texture = this.createTexture();
+		TextureManager.addPack(this.texture);
+		this.isVisible = true;
+		this.isActive = true;
+	}
+	
+	protected @NotNull Textures createTexture() {
+		return new Textures() {
 			@Override
-			protected @NotNull Dimension getAssetDimension(@NotNull Key key) {
-				int size = GUIGrid.this.getCellSize();
+			protected @NotNull MyDimension getAssetDimension(@NotNull Key key) {
+				int size = GuiGrid.this.getCellSize();
 				return switch (key) {
 					case BACKGROUND, EXPLODED, CLOSED, REVEALED, MINE, FLAG, CROSS,
 						 ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT ->
-							new Dimension(size, size);
+							new MyDimension(size, size);
 					default ->  throw new UnsupportedOperationException("This should never happen.");
 				};
 			}
 			
 			@Override
-			protected void drawMapping(@NotNull Graphics2D g, @NotNull Key key, @NotNull Dimension dimension) {
-				Coordinates coordinates = new Coordinates(0, 0);
-				Theme theme = GUIGrid.this.getSettings().getTheme();
-				int p = GUIGrid.this.getCellSize() / 16;
+			protected void drawMapping(@NotNull Graphics2D g, @NotNull Key key, @NotNull MyDimension dimension) {
+				MyCoordinates coordinates = new MyCoordinates(0, 0);
+				Theme theme = GuiGrid.this.getSettings().getTheme();
+				int p = GuiGrid.this.getCellSize() / 16;
 				
 				switch (key) {
 					case BACKGROUND -> this.drawBackground(g, coordinates, dimension, theme.background());
@@ -77,25 +103,38 @@ public class GUIGrid extends Grid<GUICell> implements Component, Clickable, Hove
 				}
 			}
 		};
-		this.isVisible = true;
-		this.isActive = true;
-		TextureManager.addPack(this.texture);
 	}
 	
 	@Override
 	public void createCells() {
-		this.grid = new GUICell[this.rows][this.columns];
+		this.grid = new GuiCell[this.rows][this.columns];
 		for (int r = 0; r < this.rows; r++) {
 			for (int c = 0; c < this.columns; c++) {
-				this.grid[r][c] = new GUICell(r, c, this, this.getX() + c * this.getCellSize(), this.getY() + r * this.getCellSize());
+				int cellX = this.getX() + c * this.getCellSize();
+				int cellY = this.getY() + r * this.getCellSize();
+				this.grid[r][c] = new GuiCell(r, c, this, cellX, cellY);
 			}
 		}
 	}
 	
 	@Override
+	protected GuiCell[][] createGridArray(int rows, int columns) {
+		return new GuiCell[rows][columns];
+	}
+	
+	@Override
+	protected GuiCell createCellFromState(int r, int c, int bitState) {
+		int cellX = this.getX() + c * this.getCellSize();
+		int cellY = this.getY() + r * this.getCellSize();
+		return new GuiCell(r, c, this, cellX, cellY, bitState);
+	}
+	
+	@Override
 	public void showAllMines() {
-		for (GUICell[] rows : this.grid) {
-			for (GUICell cell : rows) {
+		if (smiley != null)
+			this.smiley.setGameWon(false);
+		for (GuiCell[] rows : this.grid) {
+			for (GuiCell cell : rows) {
 				cell.setActive(false);
 				if (cell.isMine())
 					cell.reveal();
@@ -105,12 +144,18 @@ public class GUIGrid extends Grid<GUICell> implements Component, Clickable, Hove
 	
 	@Override
 	public void flagAllMines() {
-		for (GUICell[] rows : this.grid) {
-			for (GUICell cell : rows) {
+		if (smiley != null)
+			this.smiley.setGameWon(true);
+		for (GuiCell[] rows : this.grid) {
+			for (GuiCell cell : rows) {
 				cell.setActive(false);
 				if (cell.isMine() && !cell.isFlagged()) cell.toggleFlagged();
 			}
 		}
+	}
+	
+	public void setSmiley(@NotNull Smiley smiley) {
+		this.smiley = smiley;
 	}
 	
 	public void setSettings(@NotNull Settings settings) {
@@ -146,11 +191,11 @@ public class GUIGrid extends Grid<GUICell> implements Component, Clickable, Hove
 		int expectedW = this.columns * this.getCellSize();
 		int expectedH = this.rows * this.getCellSize();
 		
-		this.bounds = new Rectangle(this.getX(), this.getY(), expectedW, expectedH);
+		this.bounds = new MyRectangle(this.getX(), this.getY(), expectedW, expectedH);
 		
 		for (int r = 0; r < this.rows; r++) {
 			for (int c = 0; c < this.columns; c++) {
-				GUICell cell = this.grid[r][c];
+				GuiCell cell = this.grid[r][c];
 				int cellX = this.getX() + (c * this.getCellSize());
 				int cellY = this.getY() + (r * this.getCellSize());
 				cell.setBounds(cellX, cellY, this.getCellSize(), this.getCellSize());
@@ -163,11 +208,11 @@ public class GUIGrid extends Grid<GUICell> implements Component, Clickable, Hove
 	
 	@Override
 	public final void setBounds(int x, int y, int width, int height) {
-		this.setBounds(new Rectangle(x, y, width, height));
+		this.setBounds(new MyRectangle(x, y, width, height));
 	}
 	
 	@Override
-	public final void setBounds(@NotNull Rectangle bounds) {
+	public final void setBounds(@NotNull MyRectangle bounds) {
 		this.bounds = requireNonNull(bounds);
 		this.onBoundsChanged();
 	}
@@ -184,12 +229,12 @@ public class GUIGrid extends Grid<GUICell> implements Component, Clickable, Hove
 	
 	@Override
 	public int getWidth() {
-		return this.bounds.width();
+		return this.columns * this.getCellSize();
 	}
 	
 	@Override
 	public int getHeight() {
-		return this.bounds.height();
+		return this.rows * this.getCellSize();
 	}
 	
 	@Override
@@ -212,7 +257,7 @@ public class GUIGrid extends Grid<GUICell> implements Component, Clickable, Hove
 		this.texture.dispose();
 	}
 	
-	protected @Nullable GUICell getCellFromMouse(@NotNull MouseEvent e) {
+	protected @Nullable GuiCell getCellFromMouse(@NotNull MouseEvent e) {
 		int mx = e.getX() - this.getX() + this.scrollX;
 		int my = e.getY() - this.getY() + this.scrollY;
 		
@@ -265,7 +310,10 @@ public class GUIGrid extends Grid<GUICell> implements Component, Clickable, Hove
 	public void draw(@NotNull Graphics2D g) {
 		int currentSize = this.getCellSize();
 		if (currentSize != this.lastSize) {
-			this.onBoundsChanged();
+			if (parentScreen instanceof GameScreen screen)
+				screen.moveGrid();
+			else
+				this.onBoundsChanged();
 			this.lastSize = currentSize;
 		}
 		
@@ -310,8 +358,8 @@ public class GUIGrid extends Grid<GUICell> implements Component, Clickable, Hove
 		if (!this.isVisible || !this.isActive)
 			return;
 		
-		GUICell currentCell = this.getCellFromMouse(e);
-		GUICell lastCell = this.lastPressed;
+		GuiCell currentCell = this.getCellFromMouse(e);
+		GuiCell lastCell = this.lastPressed;
 		this.lastPressed = null;
 		
 		if (currentCell == null || currentCell != lastCell)
@@ -325,6 +373,9 @@ public class GUIGrid extends Grid<GUICell> implements Component, Clickable, Hove
 		if (!this.isVisible || !this.isActive)
 			return;
 		
+		if (smiley != null)
+			this.smiley.setMouseDown(true);
+		
 		this.lastPressed = this.getCellFromMouse(e);
 		
 		if (this.lastPressed == null)
@@ -337,6 +388,9 @@ public class GUIGrid extends Grid<GUICell> implements Component, Clickable, Hove
 	public void onRelease(@NotNull MouseEvent e) {
 		if (!this.isVisible || !this.isActive)
 			return;
+		
+		if (smiley != null)
+			this.smiley.setMouseDown(false);
 		
 		if (this.lastPressed == null)
 			return;
@@ -371,7 +425,7 @@ public class GUIGrid extends Grid<GUICell> implements Component, Clickable, Hove
 		if (!this.isVisible || !this.isActive)
 			return;
 		
-		GUICell cell = this.getCellFromMouse(e);
+		GuiCell cell = this.getCellFromMouse(e);
 		
 		if (cell != this.lastHovered) {
 			if (this.lastHovered != null) {

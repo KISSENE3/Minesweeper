@@ -1,27 +1,29 @@
-package com.kissene3.gui.screens;
+package com.kissene3.gui;
 
-import com.kissene3.gui.*;
-import com.kissene3.gui.io.AppLogger;
-import org.jetbrains.annotations.NotNull;
+import com.kissene3.gui.models.Settings;
+import com.kissene3.gui.screens.Screen;
+import com.kissene3.io.AppLogger;
+import org.jetbrains.annotations.*;
 
 import java.awt.*;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
+import java.util.*;
 import java.util.List;
+import java.util.concurrent.*;
 
 @SuppressWarnings("unused")
 public class ScreenManager {
-	private final Deque<Screen> screenStack = new ArrayDeque<>();
-	private final Canvas canvas;
-	private final Frame frame;
-	private final Settings settings;
+	protected final Deque<Screen> screenStack = new ArrayDeque<>();
+	private final Queue<Runnable> drawPendingActions = new ConcurrentLinkedQueue<>();
+	private final Queue<Runnable> tickPendingActions = new ConcurrentLinkedQueue<>();
+	protected final Canvas canvas;
+	protected final Frame frame;
+	protected final Settings settings;
 	
 	public ScreenManager(@NotNull Canvas canvas, @NotNull Frame frame, @NotNull Settings settings) {
 		this.canvas = canvas;
 		this.frame = frame;
 		this.settings = settings;
-		AppLogger.info("ScreenManager initialized.");
+		AppLogger.info(this.getClass().getSimpleName() + " initialized.");
 	}
 
 	public Settings getSettings() {
@@ -66,7 +68,7 @@ public class ScreenManager {
 		AppLogger.info("Popped all screens.");
 	}
 	
-	private void applyScreen(@NotNull Screen screen) {
+	protected void applyScreen(@NotNull Screen screen) {
 		for (Screen s : this.screenStack) {
 			if (s != screen)
 				this.removeListeners(s);
@@ -90,7 +92,7 @@ public class ScreenManager {
 		}
 	}
 	
-	private void removeListeners(@NotNull Screen screen) {
+	protected void removeListeners(@NotNull Screen screen) {
 		this.canvas.removeMouseListener(screen.getComponentsManager());
 		this.canvas.removeMouseWheelListener(screen.getComponentsManager());
 		this.canvas.removeMouseMotionListener(screen.getComponentsManager());
@@ -99,7 +101,27 @@ public class ScreenManager {
 	}
 	
 	public @NotNull Canvas getCanvas() {
-		return  this.canvas;
+		return this.canvas;
+	}
+	
+	public void runAfterDraw(@NotNull Runnable action) {
+		this.drawPendingActions.add(action);
+	}
+	
+	public void runAfterTick(@NotNull Runnable action) {
+		this.tickPendingActions.add(action);
+	}
+	
+	public void executeDrawPendingActions() {
+		while (!this.drawPendingActions.isEmpty()) {
+			this.drawPendingActions.poll().run();
+		}
+	}
+	
+	public void executeTickPendingActions() {
+		while (!this.tickPendingActions.isEmpty()) {
+			this.tickPendingActions.poll().run();
+		}
 	}
 	
 	public void draw(@NotNull Graphics2D g) {
@@ -126,7 +148,7 @@ public class ScreenManager {
 			
 			g.translate(-tx, -ty);
 			
-			if (i < toDraw.size() - 1) {
+			if (i == toDraw.size() - 2) {
 				g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.5f));
 				g.setColor(Color.BLACK);
 				g.fillRect(0, 0, this.canvas.getWidth(), this.canvas.getHeight());
@@ -134,11 +156,15 @@ public class ScreenManager {
 				g.setComposite(originalComposite);
 			}
 		}
+		
+		this.executeDrawPendingActions();
 	}
 	
 	public void onTick() {
 		if (this.screenStack.isEmpty())
 			return;
 		this.screenStack.peek().onTick();
+		
+		this.executeTickPendingActions();
 	}
 }

@@ -1,21 +1,23 @@
 package com.kissene3.game;
 
-import com.kissene3.console.ConsoleColor;
-import org.jetbrains.annotations.NotNull;
-import java.util.LinkedList;
-import java.util.Random;
+import com.kissene3.cli.*;
+import org.jetbrains.annotations.*;
+
+import java.math.BigInteger;
+import java.util.*;
 
 @SuppressWarnings("unused")
 public class Grid<C extends Cell<? extends Grid<C>>> {
 	protected final int columns;
 	protected final int rows;
-	protected final int numMines;
 	
+	protected int numMines;
 	protected C[][] grid;
 	protected Status gameStatus;
 	protected boolean firstMove;
 	protected int flagsRemaining;
 	protected int cellsToReveal;
+	protected BigInteger pendingStates = null;
 	
 	public Grid(@NotNull Difficulty difficulty) {
 		this.columns = difficulty.width();
@@ -27,19 +29,70 @@ public class Grid<C extends Cell<? extends Grid<C>>> {
 		this.cellsToReveal = this.columns * this.rows - this.numMines;
 	}
 	
+	public Grid(int width, int height, @NotNull BigInteger cellStates) {
+		this.columns = width;
+		this.rows = height;
+		this.firstMove = false;
+		this.gameStatus = Status.RUNNING;
+		this.pendingStates = cellStates;
+	}
+	
 	public void createCells() {
 		//noinspection unchecked
 		this.grid = (C[][]) new Cell[this.rows][this.columns];
 		for (int r = 0; r < this.rows; r++) {
 			for (int c = 0; c < this.columns; c++) {
-				this.grid[r][c] = this.createCell(r, c);
+				//noinspection unchecked, rawtypes
+				this.grid[r][c] = (C) new Cell<>(r, c, (Grid) this);
 			}
 		}
 	}
 	
-	protected C createCell(int r, int c) {
+	protected C[][] createGridArray(int rows, int columns) {
+		//noinspection unchecked
+		return (C[][]) new Cell[rows][columns];
+	}
+	
+	public void loadCellsFromState() {
+		if (this.pendingStates == null)
+			return;
+		
+		this.grid = createGridArray(this.rows, this.columns);
+		BigInteger remainingStates = this.pendingStates;
+		
+		for (int r = 0; r < this.rows; r++) {
+			for (int c = 0; c < this.columns; c++) {
+				int bitState = remainingStates.and(BigInteger.valueOf(7)).intValue();
+				this.grid[r][c] = this.createCellFromState(r, c, bitState);
+				remainingStates = remainingStates.shiftRight(3);
+			}
+		}
+		
+		int mineCounter = 0;
+		int flagCounter = 0;
+		int safeCellsToRevealCounter = 0;
+		
+		for (C[] row : this.grid) {
+			for (C cell : row) {
+				cell.checkNear();
+				if (cell.isMine())
+					mineCounter++;
+				else if (!cell.isRevealed())
+					safeCellsToRevealCounter++;
+				if (cell.isFlagged())
+					flagCounter++;
+			}
+		}
+		
+		this.numMines = mineCounter;
+		this.flagsRemaining = this.numMines - flagCounter;
+		this.cellsToReveal = safeCellsToRevealCounter;
+		this.pendingStates = null;
+	}
+	
+	protected C createCellFromState(int r, int c, int bitState) {
 		//noinspection unchecked, rawtypes
-		return (C) new Cell<>(r, c, (Grid) this);
+		return (C) new Cell<>(r, c, (Grid) this, bitState);
 	}
 	
 	public int getColumns() {
@@ -66,6 +119,10 @@ public class Grid<C extends Cell<? extends Grid<C>>> {
 		return this.flagsRemaining;
 	}
 	
+	public boolean isGameStarted() {
+		return !this.firstMove;
+	}
+	
 	protected void initializeGrid(int r, int c) {
 		this.firstMove = false;
 		this.placeMines(r, c);
@@ -82,7 +139,8 @@ public class Grid<C extends Cell<? extends Grid<C>>> {
 		while (minesPlaced < this.numMines) {
 			int row = random.nextInt(this.rows);
 			int column = random.nextInt(this.columns);
-			if (Math.abs(row - r) <= 1 && Math.abs(column - c) <= 1) continue;
+			if (Math.abs(row - r) <= 1 && Math.abs(column - c) <= 1)
+				continue;
 			
 			if (!this.grid[row][column].isMine()) {
 				this.grid[row][column].placeMine();
@@ -167,6 +225,20 @@ public class Grid<C extends Cell<? extends Grid<C>>> {
 				if (cell.isMine() && !cell.isFlagged()) cell.toggleFlagged();
 			}
 		}
+	}
+	
+	public @NotNull BigInteger getGameStateAsBigInteger() {
+		BigInteger state = BigInteger.ZERO;
+		
+		for (int r = this.rows - 1; r >= 0; r--) {
+			for (int c = this.columns - 1; c >= 0; c--) {
+				byte cellBits = this.grid[r][c].getBitState();
+				
+				state = state.shiftLeft(3).or(BigInteger.valueOf(cellBits));
+			}
+		}
+		
+		return state;
 	}
 	
 	@Override
