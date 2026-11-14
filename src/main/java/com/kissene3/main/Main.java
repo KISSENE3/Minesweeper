@@ -26,7 +26,7 @@ public class Main {
 		
 		if (os.contains("win")) {	// Windows
 			String localAppData = System.getenv("LOCALAPPDATA");
-			BASE_PATH = Paths.get(localAppData != null ? localAppData : home, "AppData", "Local", "Games", "KISSENE3", "Minesweeper");
+			BASE_PATH = Paths.get(localAppData != null ? localAppData : home + "\\AppData\\Local", "Games", "KISSENE3", "Minesweeper");
 		} else if (os.contains("mac")) {	// Mac OS
 			BASE_PATH = Paths.get(home, "Library", "Application Support", "Games", "KISSENE3", "Minesweeper");
 		} else {	// Unix
