@@ -35,7 +35,8 @@ java -jar Minesweeper-1.0.jar cli
 java -jar Minesweeper-1.0.jar log
 ```
 
-To see a preview of all possible arguments start the application this way:
-```bash
+To see all available command-line options and usage examples:
+
+```text
 java -jar Minesweeper-1.0.jar help
 ```
