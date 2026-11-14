@@ -40,3 +40,12 @@ To see all available command-line options and usage examples:
 ```text
 java -jar Minesweeper-1.0.jar help
 ```
+
+### Save Data & Configuration
+Game saves, custom themes, and `settings.json` are stored locally in your user data directory:
+
+| OS          | Default Path                                                |
+| :---------- | :---------------------------------------------------------- |
+| **Windows** | `%LOCALAPPDATA%\Games\KISSENE3\Minesweeper\`                |
+| **macOS**   | `~/Library/Application Support/Games/KISSENE3/Minesweeper/` |
+| **Linux**   | `~/.local/share/Games/KISSENE3/Minesweeper/`                |
