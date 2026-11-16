@@ -25,6 +25,8 @@
   "scroll_bar": "#66000000",
   "smiley_face": "#FFFFFF00",
   "smiley_border": "#FF000000",
-  "settings_base": "#FF505050",
-  "settings_border": "#FF000000"
+  "pause_base": "#FF505050",
+  "pause_border": "#FF000000",
+  "github_icon_background": "#1B1F23",
+  "github_icon_foreground": "FFCCCCCC"
 }

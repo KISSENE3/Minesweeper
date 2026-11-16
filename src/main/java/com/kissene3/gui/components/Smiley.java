@@ -142,7 +142,7 @@ public abstract class Smiley extends MinesweeperButton {
 		}
 		g.drawImage(this.getTexture(Textures.Key.BACKGROUND), this.getX(), this.getY(), null);
 		
-		if (this.pressed)
+		if (this.isPressed)
 			g.drawImage(this.getTexture(Textures.Key.REVEALED), this.getX(), this.getY(), null);
 		else
 			g.drawImage(this.getTexture(Textures.Key.CLOSED), this.getX(), this.getY(), null);

@@ -10,7 +10,7 @@ import java.util.*;
 public class Main {
 	/* ---------- STATIC FINAL ATTRIBUTES ---------- */
 	
-	public static final String version = "1.0";
+	public static final String version;
 	public static final Path BASE_PATH;
 	private static boolean useAnsi;
 	private static boolean terminalLog;
@@ -19,6 +19,8 @@ public class Main {
 	/* ---------- CONSTRUCTORS ---------- */
 	
 	static {
+		String v = Main.class.getPackage().getImplementationVersion();
+		version = v != null ? v : "DEV";
 		
 		// 1. Get path
 		String os = System.getProperty("os.name").toLowerCase();

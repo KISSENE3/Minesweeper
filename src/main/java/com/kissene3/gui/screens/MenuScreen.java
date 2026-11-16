@@ -187,6 +187,13 @@ public class MenuScreen extends Screen {
 					this.manager.runAfterDraw(() -> this.manager.pushScreen(new DifficultyScreen(MenuScreen.this.manager)));
 			}));
 		
+		this.componentsManager.addComponent(new GitHubButton(16, this.getHeight() - 64, 48) {
+			@Override
+			public Theme getTheme() {
+				return MenuScreen.this.manager.getSettings().getTheme();
+			}
+		});
+		
 		AppLogger.info(this.getClass().getSimpleName() + " initialized.");
 	}
 	

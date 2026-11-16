@@ -140,8 +140,10 @@ public class ThemeRegistry {
 				new Color(  0,   0,   0, 102),		// Scroll Bar
 				new Color(255, 255,   0, 255),		// Smiley Base
 				new Color(  0,   0,   0, 255),		// Smiley Border
-				new Color( 80,  80,  80, 255),		// Settings Base
-				new Color(  0,   0,   0, 255)		// Settings Border
+				new Color( 80,  80,  80, 255),		// Pause Base
+				new Color(  0,   0,   0, 255),		// Pause Border
+				new Color( 27,  31,  35, 255),		// GitHub Icon Background
+				new Color(204,  204,204, 255)		// GitHub Icon Foreground
 		));
 	}
 	

@@ -1,9 +1,11 @@
+@file:Suppress("SpellCheckingInspection")
+
 plugins {
 	id("java")
 }
 
 group = "com.kissene3"
-version = "1.0"
+version = "1.1"
 
 repositories {
 	mavenCentral()
@@ -17,6 +19,7 @@ dependencies {
 	compileOnly("org.jetbrains:annotations:26.0.2")
 
 	implementation("com.google.code.gson:gson:2.13.2")
+	implementation("com.github.weisj:jsvg:2.2.0")
 }
 
 tasks.test {
@@ -26,6 +29,7 @@ tasks.test {
 tasks.jar {
 	manifest {
 		attributes["Main-Class"] = "com.kissene3.main.Main"
+		attributes["Implementation-Version"] = project.version
 	}
 
 	from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })

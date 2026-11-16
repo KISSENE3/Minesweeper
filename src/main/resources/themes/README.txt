@@ -59,10 +59,14 @@ in Hexadecimal format using either RRGGBB or AARRGGBB (with alpha channel).
   -> The base color of Smiley.
 * smiley_border
   -> Color of the border and the details of Smiley.
-* settings_base
+* pause_base
   -> The main color of the cogwheel icon.
-* settings_border
+* pause_border
   -> Color of the border of the cogwheel icon.
+* github_icon_background
+  -> Color of the background of the GitHub icon.
+* github_icon_foreground
+  -> Color of the cat of the GitHub icon.
 
 
 -------------------------------------------------------------------------------
@@ -112,8 +116,10 @@ EXAMPLE FORMAT (light.json)
   "scroll_bar": "#66000000",
   "smiley_face": "#FFFFFF00",
   "smiley_border": "#FF000000",
-  "settings_base": "#FF505050",
-  "settings_border": "#FF000000"
+  "pause_base": "#FF505050",
+  "pause_border": "#FF000000",
+  "github_icon_background": "#1B1F23",
+  "github_icon_foreground": "#FFCCCCCC"
 }
 
 

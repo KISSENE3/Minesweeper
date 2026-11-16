@@ -75,8 +75,8 @@ public abstract class PauseButton extends MinesweeperButton {
 							g,
 							PauseButton.this.getP(),
 							new MyCoordinates(0, 0),
-							PauseButton.this.getTheme().settingsBase(),
-							PauseButton.this.getTheme().settingsBorder()
+							PauseButton.this.getTheme().pauseBase(),
+							PauseButton.this.getTheme().pauseBorder()
 					);
 					default -> throw new UnsupportedOperationException("This should never happen.");
 				}
@@ -109,7 +109,7 @@ public abstract class PauseButton extends MinesweeperButton {
 		}
 		g.drawImage(this.getTexture(Textures.Key.BACKGROUND), this.getX(), this.getY(), null);
 		
-		if (this.pressed)
+		if (this.isPressed)
 			g.drawImage(this.getTexture(Textures.Key.REVEALED), this.getX(), this.getY(), null);
 		else
 			g.drawImage(this.getTexture(Textures.Key.CLOSED), this.getX(), this.getY(), null);

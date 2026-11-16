@@ -34,9 +34,10 @@ Each theme file must define a complete set of colors. Colors can be specified in
 | `scroll_bar`                   | Color of the interactive track bars when content overflows the screen.   |
 | `smiley_face`                  | The base color of Smiley.                                                |
 | `smiley_border`                | Color of the border and the details of Smiley.                           |
-| `settings_base`                | The main color of the cogwheel icon.                                     |
-| `settings_border`              | Color of the border of the cogwheel icon.                                |
-
+| `pause_base`                   | The main color of the cogwheel icon.                                     |
+| `pause_border`                 | Color of the border of the cogwheel icon.                                |
+| `github_icon_background`       | Color of the background of the GitHub icon.                              |
+| `github_icon_foreground`       | Color of the cat of the GitHub icon.                                     |
 ---
 
 ## 🎨 Color Formats
@@ -80,8 +81,10 @@ The game engine is flexible with how you write hex codes. The following formats 
   "scroll_bar": "#66000000",
   "smiley_face": "#FFFFFF00",
   "smiley_border": "#FF000000",
-  "settings_base": "#FF505050",
-  "settings_border": "#FF000000"
+  "pause_base": "#FF505050",
+  "pause_border": "#FF000000",
+  "github_icon_background": "#1B1F23",
+  "github_icon_foreground": "#FFCCCCCC"
 }
 ```
 

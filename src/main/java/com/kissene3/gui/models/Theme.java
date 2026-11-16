@@ -1,11 +1,9 @@
 package com.kissene3.gui.models;
 
-import com.google.gson.annotations.*;
-import org.jetbrains.annotations.*;
+import com.google.gson.annotations.SerializedName;
 
-import java.awt.*;
+import java.awt.Color;
 
-@SuppressWarnings("unused")
 public record Theme(
 		@SerializedName("background") Color background,
 		@SerializedName("background_lighter_shade") Color backgroundLighterShade,
@@ -33,8 +31,10 @@ public record Theme(
 		@SerializedName("scroll_bar") Color scrollBar,
 		@SerializedName("smiley_face") Color smileyBase,
 		@SerializedName("smiley_border") Color smileyBorder,
-		@SerializedName("settings_base") Color settingsBase,
-		@SerializedName("settings_border") Color settingsBorder
+		@SerializedName("pause_base") Color pauseBase,
+		@SerializedName("pause_border") Color pauseBorder,
+		@SerializedName("github_icon_background") Color github_background,
+		@SerializedName("github_icon_foreground") Color github_foreground
 ) {
 	
 	public Theme {
@@ -43,29 +43,9 @@ public record Theme(
 				overlay == null || cross == null || flag == null || flagBase == null || mine == null || mineShade == null || numberOne == null ||
 				numberTwo == null || numberThree == null || numberFour == null || numberFive == null || numberSix == null || numberSeven == null ||
 				numberEight == null || title == null || titleOutline == null || text == null || selectedDifficulty == null || scrollBar == null ||
-				smileyBase == null || smileyBorder == null || settingsBase == null || settingsBorder == null
+				smileyBase == null || smileyBorder == null || pauseBase == null || pauseBorder == null || github_background == null || github_foreground == null
 		) {
 			throw new IllegalArgumentException("Theme colors cannot be null. Check the JSON fields.");
 		}
-	}
-	
-	/**
-	 * Gets the color of the <code>number</code> entered.
-	 * @param number The number with the color to get.
-	 * @return The color of the <code>number</code>.
-	 * @throws IllegalArgumentException If the <code>number</code> is not between 1 and 8.
-	 */
-	public @NotNull Color getNumberColor(int number) {
-		return switch (number) {
-			case 1 -> this.numberOne;
-			case 2 -> this.numberTwo;
-			case 3 -> this.numberThree;
-			case 4 -> this.numberFour;
-			case 5 -> this.numberFive;
-			case 6 -> this.numberSix;
-			case 7 -> this.numberSeven;
-			case 8 -> this.numberEight;
-			default -> throw new IllegalArgumentException("The number must be between 1 and 8.");
-		};
 	}
 }

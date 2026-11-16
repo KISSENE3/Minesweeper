@@ -14,6 +14,7 @@ public abstract class  	MyAbstractButton extends MyComponent implements Clickabl
 	
 	protected boolean isVisible = true;
 	protected boolean isHovered = false;
+	protected boolean isPressed = false;
 	
 	/* ---------- FLAGS ---------- */
 	/* ---------- CONSTRUCTORS ---------- */
@@ -32,13 +33,27 @@ public abstract class  	MyAbstractButton extends MyComponent implements Clickabl
 	
 	/* ---------- CONSTRUCTORS ---------- */
 	/* ---------- @Override Clickable ---------- */
+	public void setPressed(boolean pressed) {
+		this.isPressed = pressed;
+	}
+	public boolean isPressed() {
+		return this.isPressed;
+	}
 	
 	@Override
 	public abstract void onClick(@NotNull MouseEvent e);
 	@Override
-	public void onPress(@NotNull MouseEvent e) {}
+	public void onPress(@NotNull MouseEvent e) {
+		if (e.getButton() != MouseEvent.BUTTON1)
+			return;
+		this.isPressed = true;
+	}
 	@Override
-	public void onRelease(@NotNull MouseEvent e) {}
+	public void onRelease(@NotNull MouseEvent e) {
+		if (e.getButton() != MouseEvent.BUTTON1)
+			return;
+		this.isPressed = false;
+	}
 	
 	/* ---------- @Override Clickable ---------- */
 	/* ---------- @Override Hoverable ---------- */

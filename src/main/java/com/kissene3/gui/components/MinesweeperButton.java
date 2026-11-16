@@ -17,7 +17,6 @@ public abstract class MinesweeperButton extends MyAbstractButton {
 	protected Textures textures;
 	protected String label;
 	protected Font font;
-	protected boolean pressed = false;
 	
 	/* ---------- ATTRIBUTES ---------- */
 	/* ---------- CONSTRUCTORS ---------- */
@@ -163,7 +162,7 @@ public abstract class MinesweeperButton extends MyAbstractButton {
 		}
 		g.drawImage(this.getTexture(Textures.Key.BACKGROUND), this.getX(), this.getY(), null);
 		
-		if (this.pressed)
+		if (this.isPressed)
 			g.drawImage(this.getTexture(Textures.Key.REVEALED), this.getX(), this.getY(), null);
 		else
 			g.drawImage(this.getTexture(Textures.Key.CLOSED), this.getX(), this.getY(), null);
@@ -180,20 +179,6 @@ public abstract class MinesweeperButton extends MyAbstractButton {
 	
 	/* ---------- @Override Drawable ---------- */
 	/* ---------- @Override Clickable ---------- */
-	
-	@Override
-	public void onPress(@NotNull MouseEvent e) {
-		if (e.getButton() != MouseEvent.BUTTON1)
-			return;
-		this.pressed = true;
-	}
-	
-	@Override
-	public void onRelease(@NotNull MouseEvent e) {
-		if (e.getButton() != MouseEvent.BUTTON1)
-			return;
-		this.pressed = false;
-	}
 	
 	public abstract void onClick(@NotNull MouseEvent e);
 	
