@@ -8,12 +8,17 @@ import org.jetbrains.annotations.*;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
 
 public class ConfirmScreen extends Screen {
 	protected final Textures textures;
 	protected final Runnable onConfirmAction;
 	protected final Runnable onDeclineAction;
 	protected final String text;
+	protected MyLabel label;
+	
+	private final int screenWidth;
+	private final int screenHeight;
 	
 	public ConfirmScreen(@NotNull ScreenManager manager, @NotNull Runnable onConfirmAction) {
 		this(manager, "Are you sure?", onConfirmAction, null);
@@ -35,6 +40,11 @@ public class ConfirmScreen extends Screen {
 		this.text = text;
 		this.onConfirmAction = onConfirmAction;
 		this.onDeclineAction = onDeclineAction;
+		
+		Font defaultFont = new Font("SansSerif", Font.PLAIN, 32);
+		
+		this.screenWidth = calculateWidth(text, defaultFont);
+		this.screenHeight = calculateHeight(text, defaultFont, this.screenWidth - 32);
 		
 		this.textures = new Textures() {
 			@Override
@@ -72,8 +82,59 @@ public class ConfirmScreen extends Screen {
 		this.init();
 	}
 	
+	private static int calculateWidth(@NotNull String text, @NotNull Font font) {
+		BufferedImage img = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g2d = img.createGraphics();
+		g2d.setFont(font);
+		FontMetrics fm = g2d.getFontMetrics();
+		
+		int textWidth = fm.stringWidth(text);
+		g2d.dispose();
+		
+		// 32px total horizontal padding. Min width 256, Max width 450.
+		int desiredWidth = textWidth + 32;
+		return Math.max(256, Math.min(450, desiredWidth));
+	}
+	
+	private static int calculateHeight(@NotNull String text, @NotNull Font font, int labelWidth) {
+		BufferedImage img = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g2d = img.createGraphics();
+		g2d.setFont(font);
+		FontMetrics fm = g2d.getFontMetrics();
+		
+		String[] words = text.split("\\s+");
+		java.util.List<String> lines = new java.util.ArrayList<>();
+		StringBuilder currentLine = new StringBuilder();
+		
+		for (String word : words) {
+			String testLine = currentLine.isEmpty() ? word : currentLine + " " + word;
+			if (fm.stringWidth(testLine) <= labelWidth) {
+				currentLine = new StringBuilder(testLine);
+			} else {
+				if (!currentLine.isEmpty()) {
+					lines.add(currentLine.toString());
+					currentLine = new StringBuilder(word);
+				} else {
+					lines.add(word);
+					currentLine = new StringBuilder();
+				}
+			}
+		}
+		if (!currentLine.isEmpty()) {
+			lines.add(currentLine.toString());
+		}
+		
+		int lineHeight = fm.getHeight();
+		int totalTextHeight = lines.size() * lineHeight;
+		g2d.dispose();
+		
+		// Layout breakdown: 16 (top) + text height + 16 (spacing) + 48 (button height) + 16 (bottom)
+		return Math.max(152, totalTextHeight + 96);
+	}
+	
 	protected void init() {
-		MyLabel label = new MyLabel(16, 16, this.getWidth() - 32, 56, this.text) {
+		int labelHeight = this.getHeight() - 96;
+		this.label = new MyLabel(16, 16, this.getWidth() - 32, labelHeight, this.text) {
 			@Override
 			public @NotNull Color getColorWhenActive() {
 				return ConfirmScreen.this.manager.getSettings().getTheme().text();
@@ -84,10 +145,12 @@ public class ConfirmScreen extends Screen {
 				return ConfirmScreen.this.manager.getSettings().getTheme().text();
 			}
 		};
-		label.setFont(new Font("SansSerif", Font.PLAIN, 32));
-		this.componentsManager.addComponent(label);
+		this.label.setFont(new Font("SansSerif", Font.PLAIN, 32));
+		this.componentsManager.addComponent(this.label);
 		
-		this.componentsManager.addComponent(new MinesweeperButton(24, 80, 104, 48, "YES") {
+		int buttonY = this.getHeight() - 48 - 16;
+		
+		this.componentsManager.addComponent(new MinesweeperButton(24, buttonY, 104, 48, "YES") {
 			@Override
 			public Theme getTheme() {
 				return ConfirmScreen.this.manager.getSettings().getTheme();
@@ -104,7 +167,7 @@ public class ConfirmScreen extends Screen {
 			}
 		});
 		
-		this.componentsManager.addComponent(new MinesweeperButton(this.getWidth() - 104 - 24, 80, 104, 48, "NO") {
+		this.componentsManager.addComponent(new MinesweeperButton(this.getWidth() - 104 - 24, buttonY, 104, 48, "NO") {
 			@Override
 			public Theme getTheme() {
 				return ConfirmScreen.this.manager.getSettings().getTheme();
@@ -121,6 +184,11 @@ public class ConfirmScreen extends Screen {
 				});
 			}
 		});
+	}
+	
+	@SuppressWarnings("unused")
+	public void setFont(@NotNull Font font) {
+		this.label.setFont(font);
 	}
 	
 	@Override
@@ -140,12 +208,12 @@ public class ConfirmScreen extends Screen {
 	
 	@Override
 	public int getWidth() {
-		return 256;
+		return this.screenWidth;
 	}
 	
 	@Override
 	public int getHeight() {
-		return 152;
+		return this.screenHeight;
 	}
 	
 	@Override
